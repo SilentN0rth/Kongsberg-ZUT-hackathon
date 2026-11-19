@@ -1,0 +1,379 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/*
+ * Palette taken from the stylesheet of kongsbergmaritime.com.
+ * deep/sea/aqua/cyan are the brand teals, ice/frost/mist the light tints,
+ * ink/slate the neutrals, alert their red.
+ */
+@theme {
+  --color-ink: #0e1214;
+  --color-deep: #032a39;
+  --color-deep-2: #08435a;
+  --color-sea: #077c8e;
+  --color-aqua: #3fbac2;
+  --color-cyan: #00d6e6;
+  --color-frost: #9ed0d9;
+  --color-ice: #d2eff2;
+  --color-mist: #f3f6f7;
+  --color-slate: #5c6972;
+  --color-alert: #d71d15;
+  --color-signal: #f2a93b;
+}
+
+/* HeroUI semantic tokens mapped to the brand palette. */
+:root {
+  --accent: #3fbac2;
+  --accent-foreground: #0e1214;
+  --focus: #077c8e;
+  --foreground: #0e1214;
+  --muted: #5c6972;
+  --danger: #d71d15;
+  --danger-foreground: #ffffff;
+  --warning: #f2a93b;
+  --warning-foreground: #0e1214;
+}
+
+/*
+ * Type: the platform font first. -apple-system resolves to SF Pro with automatic optical
+ * sizing and built-in tracking; Inter (opsz axis) covers other platforms.
+ * Sizes are rem so the user's text-size setting scales the layout, and tracking tightens as size grows.
+ */
+.font-sf {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--nf-inter), "Helvetica Neue", Arial, sans-serif;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.type-hero {
+  font-size: 3.5rem;
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+@media (min-width: 1024px) {
+  .type-hero {
+    font-size: 5rem;
+  }
+}
+
+.type-title {
+  font-size: 1.75rem;
+  line-height: 1.14;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+.type-headline {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+}
+
+.type-body {
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  letter-spacing: -0.011em;
+}
+
+.type-caption {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: -0.003em;
+}
+
+/*
+ * Glass: translucent fill + blur + saturation, a bright inner top edge (light catching the
+ * material) and a soft drop shadow. Heavier surfaces get more blur.
+ */
+.wb-glass {
+  background: rgb(255 255 255 / 0.62);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    inset 0 -0.5px 0 rgb(3 42 57 / 0.12),
+    0 8px 24px rgb(3 42 57 / 0.06);
+}
+
+.wb-card {
+  background: rgb(255 255 255 / 0.55);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    0 10px 28px rgb(3 42 57 / 0.09);
+  transition:
+    transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wb-glass-chip {
+  background: rgb(255 255 255 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.85);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(14px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.wb-glass-dark {
+  background: rgb(14 18 20 / 0.4);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  color: #fff;
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2);
+  transition: background-color 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wb-lift {
+  transition:
+    transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wb-card:hover {
+    background: rgb(255 255 255 / 0.78);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 1),
+      0 18px 40px rgb(3 42 57 / 0.16);
+  }
+
+  .wb-glass-dark:hover {
+    background: rgb(14 18 20 / 0.58);
+  }
+
+  .wb-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgb(0 214 230 / 0.32);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .wb-glass,
+  .wb-card,
+  .wb-glass-chip {
+    background: #fff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .wb-glass-dark {
+    background: #1b2428;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-card,
+  .wb-lift,
+  .wb-bar {
+    transition: none;
+  }
+  .wb-lift:hover {
+    transform: none;
+  }
+}
+
+/* Continuous (squircle) corners where the browser supports them. */
+@supports (corner-shape: squircle) {
+  .wb-squircle {
+    corner-shape: squircle;
+  }
+}
+
+/* Mobile baseline: the platform tells on a "website" feel in these few places. */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+button,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wb-screen-light {
+  background:
+    radial-gradient(70% 32% at 12% 10%, rgb(63 186 194 / 0.5), transparent 72%),
+    radial-gradient(55% 30% at 96% 42%, rgb(0 214 230 / 0.3), transparent 72%),
+    radial-gradient(75% 38% at 18% 98%, rgb(7 124 142 / 0.28), transparent 72%),
+    linear-gradient(180deg, #ffffff 0%, #e8f6f7 55%, #d2eff2 100%);
+  color: var(--color-ink);
+}
+
+.wb-screen-dark {
+  background: var(--color-ink);
+  color: #fff;
+}
+
+/* Press feedback: instant on pointer-down, quick release. */
+.wb-press {
+  transition:
+    transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 120ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.wb-press:active {
+  transform: scale(0.97);
+}
+
+/* Thin gradient outline, as on the welcome button. */
+.wb-outline-pill {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#f6fbfb, #f6fbfb) padding-box,
+    linear-gradient(90deg, #077c8e, #3fbac2 45%, #00d6e6) border-box;
+}
+
+/* Theme what the browser draws itself. */
+::selection {
+  background: rgb(63 186 194 / 0.4);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-sea);
+  outline-offset: 2px;
+}
+
+.wb-screen-dark :focus-visible,
+.wb-dock :focus-visible {
+  outline-color: var(--color-cyan);
+}
+
+/* Scanner line sweeping through the frame. */
+@keyframes wb-sweep {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.wb-sweep {
+  animation: wb-sweep 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-press {
+    transition: none;
+  }
+  .wb-sweep {
+    animation: none;
+    transform: translateY(-50%);
+  }
+}
+/* rev 2 */
+/* rev 3 */
+
+/* Top bar: clear at rest, glass once the content scrolls under it. */
+.wb-bar {
+  background: rgb(255 255 255 / 0);
+  -webkit-backdrop-filter: blur(0) saturate(100%);
+  backdrop-filter: blur(0) saturate(100%);
+  box-shadow: 0 0.5px 0 rgb(3 42 57 / 0);
+  transition:
+    background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    backdrop-filter 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    -webkit-backdrop-filter 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wb-bar[data-scrolled="true"] {
+  background: rgb(255 255 255 / 0.62);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    inset 0 -0.5px 0 rgb(3 42 57 / 0.12),
+    0 8px 24px rgb(3 42 57 / 0.06);
+}
+
+/*
+ * Bottom dock: one glass surface shaped by a mask (two slabs and a notch for the scan button),
+ * so the blur follows the notch instead of a rectangle.
+ */
+.wb-dock-glass {
+  background: rgb(3 42 57 / 0.78);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  backdrop-filter: blur(26px) saturate(190%);
+  border-radius: 30px 30px 0 0;
+  -webkit-mask:
+    linear-gradient(#000 0 0) left top / calc(50% - 69px) 100% no-repeat,
+    linear-gradient(#000 0 0) right top / calc(50% - 69px) 100% no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='72' viewBox='0 0 140 72'%3E%3Cpath d='M0 0C22 0 26 40 70 40C114 40 118 0 140 0V72H0Z'/%3E%3C/svg%3E") center top / 140px 72px no-repeat,
+    linear-gradient(#000 0 0) center 71px / 140px calc(100% - 71px) no-repeat;
+  mask:
+    linear-gradient(#000 0 0) left top / calc(50% - 69px) 100% no-repeat,
+    linear-gradient(#000 0 0) right top / calc(50% - 69px) 100% no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='72' viewBox='0 0 140 72'%3E%3Cpath d='M0 0C22 0 26 40 70 40C114 40 118 0 140 0V72H0Z'/%3E%3C/svg%3E") center top / 140px 72px no-repeat,
+    linear-gradient(#000 0 0) center 71px / 140px calc(100% - 71px) no-repeat;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .wb-bar[data-scrolled="true"] {
+    background: #fff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .wb-dock-glass {
+    background: #032a39;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+/* rev 4 */
+/* rev 5 */
+/* rev 6 */
+/* rev 7 */
+/* rev 8 */
+
+/* Welcome hero: huge light display type, entering once on load. */
+.wb-hero-title {
+  font-weight: 200;
+  font-size: clamp(3.5rem, 11vw, 9.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+@keyframes wb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.wb-enter {
+  animation: wb-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-enter {
+    animation: none;
+  }
+}
+/* rev 9 */
