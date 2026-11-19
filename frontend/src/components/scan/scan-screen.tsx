@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import jsQR from "jsqr";
 import { Chip, ProgressCircle, ToggleButton } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
-import { CameraOffIcon, ChevronLeftIcon, GridIcon, QrScanIcon, TorchIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, CameraOffIcon, ChevronLeftIcon, GridIcon, QrScanIcon, TorchIcon } from "@/components/ui/icons";
 import { Screen } from "@/components/ui/screen";
 import { useDevices } from "@/lib/hooks";
+import { decodeQrFromFile } from "@/lib/qr-image";
 import { deviceIdFromCode } from "@/lib/schemas";
 
 const SCAN_EVERY_MS = 120;
@@ -26,36 +27,59 @@ export function ScanScreen() {
   const streamRef = useRef<MediaStream | null>(null);
   const devicesRef = useRef(devices);
   const handled = useRef(false);
+  const [manualCode, setManualCode] = useState("");
+  const [reading, setReading] = useState(false);
 
   useEffect(() => {
     devicesRef.current = devices;
   });
 
+  // Wspólna obsługa kodu, niezależnie od źródła: podgląd na żywo, zdjęcie, pole tekstowe (też skaner sprzętowy).
+  const handleCodeRef = useRef<(raw: string) => boolean>(() => false);
   useEffect(() => {
-    let cancelled = false;
-    let raf = 0;
-    let lastScan = 0;
-    let lastBad = "";
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-
-    function onCode(raw: string) {
-      if (handled.current) return;
+    handleCodeRef.current = (raw: string) => {
+      if (handled.current) return true;
       const id = deviceIdFromCode(raw);
       const known = devicesRef.current;
       if (!id || (known && !known.some((d) => d.id === id))) {
-        if (raw !== lastBad) {
-          lastBad = raw;
-          setHint(id ? `Nieznane urządzenie: ${id}` : "To nie jest kod urządzenia");
-        }
-        return;
+        setHint(id ? `Nieznane urządzenie: ${id}` : "To nie jest kod urządzenia");
+        return false;
       }
       handled.current = true;
       navigator.vibrate?.(40);
       const name = known?.find((d) => d.id === id)?.name ?? id;
       setHint(`Odczytano: ${name}`);
       router.push(`/zglos?urzadzenie=${encodeURIComponent(id)}`);
+      return true;
+    };
+  });
+
+  async function onPhoto(file: File | undefined) {
+    if (!file) return;
+    setReading(true);
+    setHint("Odczytuję kod…");
+    const raw = await decodeQrFromFile(file);
+    setReading(false);
+    if (!raw) {
+      setHint("Nie udało się odczytać kodu. Podejdź bliżej i zrób zdjęcie jeszcze raz.");
+      return;
     }
+    handleCodeRef.current(raw);
+  }
+
+  function onManualSubmit(e: FormEvent) {
+    e.preventDefault();
+    const raw = manualCode.trim();
+    if (!raw) return;
+    if (handleCodeRef.current(raw)) setManualCode("");
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    let raf = 0;
+    let lastScan = 0;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
     function tick(time: number) {
       raf = requestAnimationFrame(tick);
@@ -68,12 +92,12 @@ export function ScanScreen() {
       canvas.height = h;
       ctx.drawImage(video, 0, 0, w, h);
       const code = jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "dontInvert" });
-      if (code?.data) onCode(code.data);
+      if (code?.data) handleCodeRef.current(code.data);
     }
 
     async function start() {
       if (!navigator.mediaDevices?.getUserMedia) {
-        setCamError("Aparat wymaga połączenia HTTPS lub adresu localhost. Wybierz urządzenie ręcznie.");
+        setCamError("Podgląd na żywo wymaga HTTPS. Zrób zdjęcie kodu albo wpisz go ręcznie.");
         return;
       }
       try {
@@ -95,7 +119,7 @@ export function ScanScreen() {
         setTorchOk(Boolean(caps?.torch));
         raf = requestAnimationFrame(tick);
       } catch {
-        if (!cancelled) setCamError("Brak dostępu do aparatu. Zezwól na niego w ustawieniach albo wybierz urządzenie ręcznie.");
+        if (!cancelled) setCamError("Brak dostępu do aparatu. Zrób zdjęcie kodu albo wpisz go ręcznie.");
       }
     }
     void start();
@@ -154,15 +178,64 @@ export function ScanScreen() {
 
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center gap-8 px-6">
         {camError ? (
-          <div role="alert" className="wb-glass-dark flex max-w-sm flex-col items-center gap-4 rounded-3xl p-6 text-center">
-            <CameraOffIcon width={44} height={44} className="text-aqua" />
-            <p className="type-body">{camError}</p>
+          <div className="flex w-full max-w-sm flex-col items-center gap-5 text-center">
+            <div role="alert" className="wb-glass-dark flex flex-col items-center gap-3 rounded-3xl p-5">
+              <CameraOffIcon width={40} height={40} className="text-aqua" />
+              <p className="type-body">{camError}</p>
+            </div>
+
+            <label
+              className={`group wb-lift flex h-16 w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-white px-7 text-[1.125rem] font-semibold tracking-[-0.011em] text-ink transition-colors hover:bg-ice has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-aqua ${
+                reading ? "pointer-events-none opacity-70" : ""
+              }`}
+            >
+              <QrScanIcon width={26} height={26} />
+              {reading ? "Odczytuję…" : "Zrób zdjęcie kodu"}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="sr-only"
+                onChange={(e) => {
+                  void onPhoto(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+
+            <form onSubmit={onManualSubmit} className="flex w-full items-center gap-2">
+              <input
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+                aria-label="Kod urządzenia"
+                placeholder="Wpisz lub zeskanuj kod"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="go"
+                className="wb-glass-dark type-body h-14 min-w-0 flex-1 rounded-full px-5 text-white placeholder:text-white/60 focus-visible:outline-3 focus-visible:outline-aqua"
+              />
+              <button
+                type="submit"
+                aria-label="Otwórz urządzenie"
+                className="wb-press grid size-14 shrink-0 place-items-center rounded-full bg-aqua text-ink"
+              >
+                <ArrowRightIcon width={24} height={24} />
+              </button>
+            </form>
+
             <Link
               href="/zglos"
-              className={`${buttonVariants({ variant: "primary", size: "lg" })} wb-lift h-12 rounded-full px-8 font-semibold`}
+              className={`${buttonVariants({ variant: "tertiary", size: "lg" })} wb-glass-dark wb-lift h-14 rounded-full px-8 font-medium`}
             >
-              Wybierz urządzenie ręcznie
+              Wybierz urządzenie z listy
             </Link>
+
+            {hint && (
+              <div role="status" className="type-body text-white/85">
+                {hint}
+              </div>
+            )}
           </div>
         ) : (
           <>
