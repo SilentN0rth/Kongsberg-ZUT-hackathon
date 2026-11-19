@@ -18,8 +18,12 @@ import { DEVICES, SCENARIOS, demoToolsEnabled, ensureDevices, loadScenario, simu
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Lokalna baza SQLite w pliku. SQLite nie tworzy katalogu, więc robimy to przy starcie.
+// Lokalnie: plik SQLite. Na Vercel system plików jest tylko do odczytu i nietrwały, więc tam DATABASE_URI musi wskazywać
+// zdalną bazę libSQL (Turso: libsql://nazwa-org.turso.io) razem z DATABASE_AUTH_TOKEN. SQLite nie tworzy katalogu, więc robimy to przy starcie.
 const databaseUrl = process.env.DATABASE_URI || "file:./data/watchbrief.db";
+if (process.env.VERCEL && databaseUrl.startsWith("file:")) {
+  throw new Error("Na Vercel ustaw DATABASE_URI na adres zdalnej bazy libSQL (libsql://...) i DATABASE_AUTH_TOKEN.");
+}
 if (databaseUrl.startsWith("file:")) fs.mkdirSync(path.dirname(databaseUrl.slice("file:".length)), { recursive: true });
 
 const guard = (req: { user?: unknown }) => {
@@ -83,7 +87,7 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   // W produkcji (next start) schemat tworzą migracje z src/migrations; w dev Payload synchronizuje go sam.
-  db: sqliteAdapter({ client: { url: databaseUrl }, prodMigrations: migrations }),
+  db: sqliteAdapter({ client: { url: databaseUrl, authToken: process.env.DATABASE_AUTH_TOKEN }, prodMigrations: migrations }),
   graphQL: { disable: true },
   i18n: { supportedLanguages: { pl }, fallbackLanguage: "pl" },
   sharp,
