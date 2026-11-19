@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:test;MODE=PostgreSQL")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:test")
 @AutoConfigureMockMvc
 class ApiTest {
     @Autowired MockMvc mvc;

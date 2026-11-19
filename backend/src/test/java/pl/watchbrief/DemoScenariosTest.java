@@ -15,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Osobna baza w pamieci (nie wspoldzielona z ApiTest), a kazdy test zaczyna od czystego scenariusza. */
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:scenarios;MODE=PostgreSQL")
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:scenarios")
 @AutoConfigureMockMvc
 class DemoScenariosTest {
     @Autowired MockMvc mvc;

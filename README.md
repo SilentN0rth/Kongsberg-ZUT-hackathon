@@ -10,7 +10,7 @@ Monorepo: dwa niezależne projekty, które łączy wyłącznie REST API.
 ## Uruchomienie
 
 ```bash
-pnpm dev:api    # backend na :8080 (bez DATABASE_URL używa lokalnego H2)
+pnpm dev:api    # backend na :8080 (lokalna baza H2 w backend/data)
 pnpm dev:web    # frontend na :3000, /api/* przekierowane na backend
 pnpm test:api   # testy backendu
 ```
