@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Chip } from "@heroui/react";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { Screen } from "@/components/ui/screen";
 import { OceanCanvas } from "@/components/welcome/ocean-canvas";
@@ -61,12 +60,11 @@ export function WelcomeScreen() {
           </div>
 
           <div data-dive="fade">
-          <ul className="wb-enter flex flex-wrap gap-2 lg:justify-end" style={enter(460)} aria-label="Najważniejsze cechy">
-            {FEATURES.map((f) => (
-              <li key={f}>
-                <Chip size="lg" variant="soft" className="wb-glass-dark h-auto rounded-full px-5 py-2.5">
-                  <Chip.Label className="type-body text-white">{f}</Chip.Label>
-                </Chip>
+          <ul className="wb-enter flex flex-wrap items-center gap-x-5 gap-y-2 lg:justify-end" style={enter(460)} aria-label="Najważniejsze cechy">
+            {FEATURES.map((f, i) => (
+              <li key={f} className="flex items-center gap-5 text-[0.9375rem] tracking-[0.01em] text-white/70">
+                {i > 0 && <span aria-hidden="true" className="size-1 rounded-full bg-aqua/70" />}
+                {f}
               </li>
             ))}
           </ul>

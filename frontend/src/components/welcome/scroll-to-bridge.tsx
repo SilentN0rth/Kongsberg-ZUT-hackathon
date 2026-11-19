@@ -2,7 +2,6 @@
 
 import { animate, motionValue } from "motion";
 import { useEffect, useRef, type ReactNode } from "react";
-import { ArrowRightIcon } from "@/components/ui/icons";
 import { useMedia } from "@/lib/use-media";
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -152,19 +151,6 @@ export function ScrollToBridge({ children }: { children: ReactNode }) {
             data-dive="veil"
             className="pointer-events-none absolute inset-0 z-30 bg-[radial-gradient(60%_50%_at_15%_10%,rgb(7_124_142/0.55),transparent_70%),radial-gradient(50%_45%_at_90%_85%,rgb(0_214_230/0.22),transparent_70%),#032a39] opacity-0"
           />
-
-          <button
-            type="button"
-            data-dive="fade"
-            onClick={() => goRef.current?.()}
-            aria-label="Wejdź na stanowisko mostka (przewiń w dół lub kliknij)"
-            className="wb-glass-dark absolute bottom-10 left-1/2 z-20 flex h-11 -translate-x-1/2 items-center gap-3 rounded-full px-5 text-[0.9375rem]"
-          >
-            Przewiń, aby wejść na mostek
-            <span className="wb-nudge inline-flex">
-              <ArrowRightIcon width={18} height={18} className="rotate-90" />
-            </span>
-          </button>
         </>
       )}
     </div>
