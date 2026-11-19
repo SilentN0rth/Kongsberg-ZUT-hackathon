@@ -23,7 +23,8 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 // Integracja Turso w Vercel ustawia TURSO_DATABASE_URL i TURSO_AUTH_TOKEN; obie nazwy są obsługiwane.
 const databaseUrl = process.env.DATABASE_URI || process.env.TURSO_DATABASE_URL || "file:./data/watchbrief.db";
 const databaseAuthToken = process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN;
-if (process.env.VERCEL && databaseUrl.startsWith("file:")) {
+// Podczas buildu baza nie jest potrzebna (Next tylko wczytuje konfigurację), więc błąd rzucamy dopiero w działającej aplikacji.
+if (process.env.VERCEL && process.env.NEXT_PHASE !== "phase-production-build" && databaseUrl.startsWith("file:")) {
   throw new Error("Na Vercel ustaw DATABASE_URI (lub dodaj integrację Turso) na adres zdalnej bazy libSQL (libsql://...) i DATABASE_AUTH_TOKEN.");
 }
 if (databaseUrl.startsWith("file:")) fs.mkdirSync(path.dirname(databaseUrl.slice("file:".length)), { recursive: true });
