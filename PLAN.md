@@ -21,7 +21,7 @@ Projekty nie współdzielą plików konfiguracyjnych ani zależności. Łączy j
 - HeroUI v3 (`@heroui/react`, `@heroui/styles`).
 - Offline/PWA: `dexie`, `serwist`; QR: `qrcode` (+ `@types/qrcode`).
 - Frontend: brak kodu aplikacji (tylko szablon create-next-app); `frontend/next.config.ts` przepisuje `/api/*` na backend (`BACKEND_URL`).
-- Backend ma `Dockerfile` (deploy np. Render/Railway/Fly).
+- Backend uruchamiany lokalnie na komputerze mostka (`scripts/start-backend.*`); `Dockerfile` jest opcjonalny.
 - Uwaga: `.gitignore` ignoruje `.env*` – dodać wyjątek `!.env.example`.
 
 ## Zmiany względem konceptu
@@ -34,7 +34,7 @@ Projekty nie współdzielą plików konfiguracyjnych ani zależności. Łączy j
 
 ## Otwarte decyzje (do zamknięcia w Etapie 0)
 
-1. **Baza:** lokalna H2 w pliku (bez instalacji, bez internetu); Postgres tylko opcjonalnie, do wdrożenia Neon / Supabase / Vercel Postgres (hosted, rekomendowane na hackathon) albo lokalny Postgres z Homebrew. Potrzebny `DATABASE_URL`.
+1. **Baza:** lokalna H2 w pliku (bez instalacji, bez internetu); Postgres tylko opcjonalnie (wtedy `DATABASE_URL`).
 2. **Hosting:** brak chmury – wszystko na komputerze na mostku w sieci lokalnej (sekcja „Wdrożenie” niżej).
 3. **Zdjęcia:** na razie `bytea` w Postgresie (zdjęcia kompresowane po stronie klienta); S3/Blob tylko jeśli zabraknie miejsca.
 4. **Serwist z Next 16/Turbopack:** sprawdzić, czy wystarczy `serwist` + własny `sw.ts`, czy dołożyć `@serwist/turbopack`.
@@ -66,7 +66,7 @@ Budżet: 10 h hackathonu. Bramki (🚩/🧊) z konceptu zostają.
 - ✅ Backend Spring Boot (`backend/`): encje `Device`, `Report`, `Handover`, seed 10 urządzeń + 5 wpisów (1 krytyczny), brief z szablonu, `POST /api/demo/reset`.
 - Do zrobienia: wdrożenie backendu (Docker + Postgres) i podpięcie `BACKEND_URL`.
 - HeroUI + Tailwind: motyw, Night Mode (czerwono-czarny) jako tokeny.
-- **Test krytyczny na prawdziwym telefonie:** telefon ↔ Vercel ↔ laptop, service worker, otwarcie `/nowa?sektor=A&urzadzenie=pompa-03` bez sieci.
+- **Test krytyczny na prawdziwym telefonie:** skaner ↔ komputer mostka w sieci lokalnej, service worker, otwarcie `/nowa?sektor=A&urzadzenie=pompa-03` bez sieci.
 
 ### Etap 2 – MUST: przepływ usterki (1:30–4:00)
 - Ekran „Nowa obserwacja”: zdjęcie (`input capture` + kompresja canvas), kafle urządzenie/objaw/priorytet.
