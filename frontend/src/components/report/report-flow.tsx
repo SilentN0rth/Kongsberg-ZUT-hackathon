@@ -21,6 +21,7 @@ import {
   VibrationIcon,
 } from "@/components/ui/icons";
 import { Screen } from "@/components/ui/screen";
+import { newId } from "@/lib/id";
 import { PRIORITIES, PRIORITY_LABEL, SECTORS, SYMPTOMS, type Priority } from "@/lib/catalog";
 import { useDevices, useReports } from "@/lib/hooks";
 import { ApiError } from "@/lib/api";
@@ -106,7 +107,7 @@ export function ReportFlow({ initialDeviceId }: { initialDeviceId?: string }) {
     setBusy(true);
     try {
       const status = await submitReport({
-        id: crypto.randomUUID(),
+        id: newId(),
         deviceId: checked.data.deviceId,
         symptom: checked.data.symptom,
         priority: checked.data.priority,
