@@ -162,6 +162,7 @@ Alertów jako osobnego mechanizmu nie ma: o „alarmie” decyduje `priority = C
 **Czas:** w bazie i w JSON-ie wszystkie znaczniki czasu są w UTC (ISO-8601 z `Z`) i frontend przelicza je na czas lokalny. Tekst briefu używa strefy `Europe/Warsaw` (zmiana lato/zima automatyczna); inną strefę ustawia zmienna `watchbrief.timezone`.
 
 ## Payload CMS jako panel mostka i warstwa danych (`frontend/`)
+**Panel mostka to panel CMS (`/admin`).** Pulpit („Stanowisko mostka”), lista zgłoszeń z odświeżaniem na żywo i przyciskami „Potwierdź/Rozwiąż”, kolejka i brief zmiany są w Payload. Dawny osobny widok `/mostek` został usunięty (przekierowuje na `/admin`). Telefony (`/`, `/urzadzenia`, `/skanuj`, `/zglos`) to widok pracownika, który tylko zgłasza usterki. Na desktopie przewinięcie strony głównej `/` „zanurza” w morze i przechodzi do `/admin` (`src/components/welcome/scroll-to-bridge.tsx`; wyłączone na telefonach i przy `prefers-reduced-motion`, tam zostaje zwykły przycisk).
 Dane aplikacji obsługuje teraz **Payload CMS 3** w tym samym procesie Next.js (REST pod `/api/*`, panel pod `/admin`), z lokalną bazą **SQLite** (`frontend/data/watchbrief.db`, bez Dockera i bez chmury). Backend w Javie (`backend/`) zostaje w repo nietknięty i jest dostępny pod `/legacy-api/*`.
 
 | Kolekcja Payload | Odpowiednik w Javie | Uwagi |
@@ -170,11 +171,13 @@ Dane aplikacji obsługuje teraz **Payload CMS 3** w tym samym procesie Next.js (
 | `reports` | `Report` | `id` = UUID z urządzenia; `reportedAt` = czas z urządzenia, `createdAt` = odebrano na serwerze; statusy `NEW/ACKNOWLEDGED/RESOLVED` |
 | `queue` | (nowe) | **Kolejka przyjęć**: każde zgłoszenie trafia tu przez `POST /api/queue/submit`, jest walidowane i dopiero potem staje się `report`. Statusy `PENDING/PROCESSED/FAILED`, licznik prób, powód błędu. Idempotentne po `clientId` |
 | `handovers` | `Handover` | `POST /api/handovers/generate`, `GET /api/handovers/latest`, `POST /api/handovers/:id/take` |
-| `users` | (nowe) | logowanie oficerów do `/admin` i `/mostek`; pierwszego użytkownika tworzy się w `/admin` |
+| `users` | (nowe) | jedyna rola: **administrator (Kongsberg Maritime)**; nie ma kont zwykłych użytkowników, a załoga się nie loguje. Pierwszego administratora tworzy się na ekranie `/admin` |
 
 **Kolejkowanie ma dwie warstwy:** telefon trzyma zgłoszenia, których nie udało się wysłać, w IndexedDB (Dexie, `src/lib/queue.ts`) i ponawia je po powrocie sieci; serwer ma własną kolekcję `queue`, więc błędny wpis nie ginie, tylko zostaje widoczny jako `FAILED` z powodem (przycisk „Przetwórz kolejkę” na pulpicie panelu).
 
-**Dostęp:** załoga na telefonach nie loguje się (odczyt urządzeń i zgłoszeń, wysyłka przez kolejkę). Zmiana statusu, brief, kolejka i narzędzia demo wymagają zalogowanego oficera. `/mostek` przekierowuje niezalogowanych na `/admin/login`.
+**Dostęp:** załoga na telefonach nie loguje się (odczyt urządzeń i zgłoszeń, wysyłka przez kolejkę). Zmiana statusu, brief, kolejka i narzędzia demo wymagają zalogowanego administratora (`/admin`).
+
+**Wygląd i ustawienia panelu:** panel jest jasny (`admin.theme: "light"`), w stylu aplikacji: szklany panel boczny z kartą bieżącej wachty, zakładki statusów z licznikami i odświeżaniem na żywo nad listą zgłoszeń, tabele jako karty, akcje weryfikacji w widoku pojedynczego zgłoszenia. **Pojedyncze dokumenty (Globals):** `settings` („Ustawienia statku”: nazwa statku, strefa czasowa, nagłówek briefu, grafik wacht, interwał odświeżania). Odczyt jest publiczny (korzysta z niego aplikacja załogi), zapis tylko dla administratora. Style: `src/app/(payload)/admin-theme.css`, komponenty: `src/admin/`.
 
 **Narzędzia demo** (`/api/demo/*`, scenariusze `basic/quiet/busy/critical`, symulator) kasują dane, więc wymagają logowania i `WATCHBRIEF_DEMO_TOOLS=true` (domyślnie włączone tylko poza produkcją).
 

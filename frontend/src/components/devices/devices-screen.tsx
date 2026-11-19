@@ -5,13 +5,13 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Badge, Button, Card, Chip, Drawer, Popover, Skeleton, Tabs } from "@heroui/react";
 import { BottomNav } from "@/components/ui/bottom-nav";
-import { SideNav } from "@/components/ui/side-nav";
 import { BellIcon, ClockIcon, MenuIcon, PlusIcon } from "@/components/ui/icons";
 import { DeviceGlyph } from "@/components/devices/device-glyphs";
 import { DeviceSheet, SHEET_SPRING } from "@/components/devices/device-sheet";
-import { PRIORITY_LABEL, PRIORITY_RANK, WATCH, type Priority } from "@/lib/catalog";
+import { PRIORITY_LABEL, PRIORITY_RANK, type Priority } from "@/lib/catalog";
+import { DEFAULT_WATCHES, currentWatch, watchTitle, watchWindow } from "@/lib/watch";
 import { useOutboxCount } from "@/lib/queue";
-import { useDevices, useReports } from "@/lib/hooks";
+import { useDevices, useReports, useSettings } from "@/lib/hooks";
 import { useLenis } from "@/lib/use-lenis";
 
 const DOT: Record<Priority, { color: "danger" | "warning" | "accent"; label: string }> = {
@@ -49,6 +49,8 @@ export function DevicesScreen() {
 
   const { devices, error } = useDevices();
   const { reports } = useReports();
+  const settings = useSettings();
+  const watch = currentWatch(settings?.watches?.length ? settings.watches : DEFAULT_WATCHES, settings?.timezone ?? "Europe/Warsaw");
   const queued = useOutboxCount();
 
   // Highest-priority unresolved report per device drives the dot on the card.
@@ -74,15 +76,14 @@ export function DevicesScreen() {
   return (
     <>
       <div className="absolute inset-0 flex">
-        <SideNav active="urzadzenia" critical={critical} pending={(reports ?? []).filter((r) => r.status === "NEW").length} />
         <div className="relative min-w-0 flex-1">
       <header
         data-scrolled={scrolled}
-        className="wb-bar absolute inset-x-0 top-0 z-10 grid grid-cols-[3rem_1fr_3rem] items-center px-5 pb-3 lg:grid-cols-[1fr_3rem] lg:px-10"
+        className="wb-bar absolute inset-x-0 top-0 z-10 grid grid-cols-[3rem_1fr_3rem] items-center px-5 pb-3"
         style={{ paddingTop: "max(1.25rem, env(safe-area-inset-top))" }}
       >
         <Drawer>
-          <Button isIconOnly variant="ghost" aria-label="Menu" className="size-12 rounded-full lg:hidden [&_svg]:size-7">
+          <Button isIconOnly variant="ghost" aria-label="Menu" className="size-12 rounded-full [&_svg]:size-7">
             <MenuIcon width={28} height={28} />
           </Button>
           <Drawer.Backdrop>
@@ -90,12 +91,12 @@ export function DevicesScreen() {
               <Drawer.Dialog>
                 <Drawer.CloseTrigger />
                 <Drawer.Header>
-                  <Drawer.Heading>{WATCH.label}</Drawer.Heading>
+                  <Drawer.Heading>{watchTitle(watch)}</Drawer.Heading>
                 </Drawer.Header>
                 <Drawer.Body className="flex flex-col gap-4">
                   <p className="type-body flex items-center gap-2 text-muted">
                     <ClockIcon width={20} height={20} />
-                    {WATCH.window}
+                    {watch ? watchWindow(watch) : "Brak aktywnej wachty"}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Chip color="danger" variant="soft">
@@ -121,7 +122,7 @@ export function DevicesScreen() {
           </Drawer.Backdrop>
         </Drawer>
 
-        <h1 className="type-title text-center text-ink lg:text-left lg:text-[2rem]">Urządzenia</h1>
+        <h1 className="type-title text-center text-ink">Urządzenia</h1>
 
         <Popover>
           <Button isIconOnly variant="ghost" aria-label={`Powiadomienia (${notifications.length})`} className="size-12 rounded-full [&_svg]:size-7">

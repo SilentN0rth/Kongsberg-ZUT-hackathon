@@ -19,7 +19,12 @@ export type ReportOut = {
   status: ReportStatus;
 };
 
-export type Brief = { handoverId: number; text: string; createdAt: string; takenOverAt: string | null };
+// Ustawienia statku (globalny dokument Payload): odczyt publiczny, bo korzysta z nich też aplikacja załogi.
+export type ShipSettingsDoc = {
+  vesselName?: string;
+  timezone?: string;
+  watches?: { label: string; from: string; to: string; role?: string | null }[];
+};
 
 export class ApiError extends Error {
   constructor(
@@ -82,6 +87,7 @@ const toReport = (r: PayloadReport): ReportOut => {
 };
 
 export const api = {
+  settings: () => call<ShipSettingsDoc>("/api/globals/settings"),
   devices: async () =>
     (await call<PayloadList<PayloadDevice>>("/api/devices?limit=0&depth=0&sort=sector")).docs.map(({ id, sector, name, serial }) => ({
       id,
@@ -92,11 +98,4 @@ export const api = {
   reports: async () => (await call<PayloadList<PayloadReport>>("/api/reports?limit=0&depth=1&sort=-reportedAt")).docs.map(toReport),
   // Zgłoszenia zawsze przechodzą przez kolejkę (idempotentnie po id), a dopiero potem stają się zgłoszeniami.
   submit: (r: ReportIn) => call<{ status: "PROCESSED"; queueId: number; reportId: string }>("/api/queue/submit", { method: "POST", body: JSON.stringify(r) }),
-  setStatus: async (id: string, status: ReportStatus) => {
-    await call(`/api/reports/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ status }) });
-  },
-  latestBrief: () => call<Brief | undefined>("/api/handovers/latest"),
-  generateBrief: () => call<Brief>("/api/handovers/generate", { method: "POST" }),
-  takeOver: (id: number) => call<Brief>(`/api/handovers/${id}/take`, { method: "POST" }),
-  logout: () => call("/api/users/logout", { method: "POST" }),
 };

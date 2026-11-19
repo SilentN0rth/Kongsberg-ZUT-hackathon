@@ -9,8 +9,6 @@ export const reportSchema = z.object({
   note: z.string().trim().max(280, "Notatka może mieć najwyżej 280 znaków").optional(),
 });
 
-export type ReportForm = z.infer<typeof reportSchema>;
-
 export function validateReport(input: unknown) {
   const result = reportSchema.safeParse(input);
   if (result.success) return { ok: true as const, data: result.data };

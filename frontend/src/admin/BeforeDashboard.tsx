@@ -2,11 +2,17 @@ import Link from "next/link";
 import { Chip } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import type { ServerProps } from "payload";
+import { BriefPanel } from "@/admin/BriefPanel";
 import { DemoTools } from "@/admin/DemoTools";
 import { demoToolsEnabled } from "@/lib/server/demo";
+import { getSettings } from "@/lib/server/settings";
+import { currentWatch, watchTitle, watchWindow } from "@/lib/watch";
 
 // Pulpit mostka nad standardowymi kafelkami Payload: stan zgłoszeń, skróty do weryfikacji i kolejki.
-export async function BeforeDashboard({ payload }: ServerProps) {
+export async function BeforeDashboard({ payload, user }: ServerProps) {
+  const who = (user as { name?: string; email?: string } | null | undefined)?.name || (user as { email?: string } | null | undefined)?.email || "Administrator";
+  const settings = await getSettings(payload);
+  const watch = currentWatch(settings.watches, settings.timezone);
   const count = async (collection: "reports" | "queue", where: Record<string, unknown>) =>
     (await payload.count({ collection, where: where as never })).totalDocs;
 
@@ -21,8 +27,12 @@ export async function BeforeDashboard({ payload }: ServerProps) {
   return (
     <section className="wb-admin-panel" aria-labelledby="wb-admin-h">
       <h2 id="wb-admin-h" className="wb-admin-title">
-        Weryfikacja zgłoszeń
+        Stanowisko mostka
       </h2>
+      <p className="wb-admin-muted">
+        {settings.vesselName} · {watchTitle(watch)}
+        {watch ? ` (${watchWindow(watch)})` : ""} · zalogowano jako {who}
+      </p>
       <div className="wb-admin-row">
         <Chip size="lg" color="accent" variant="soft">
           <Chip.Label>{pending} do weryfikacji</Chip.Label>
@@ -46,13 +56,17 @@ export async function BeforeDashboard({ payload }: ServerProps) {
         <Link className={buttonVariants({ variant: "secondary" })} href="/admin/collections/queue">
           Kolejka
         </Link>
-        <Link className={buttonVariants({ variant: "outline" })} href="/mostek">
-          Widok na żywo
+        <Link className={buttonVariants({ variant: "outline" })} href="/admin/collections/devices">
+          Urządzenia
         </Link>
         <Link className={buttonVariants({ variant: "ghost" })} href="/admin/collections/handovers">
-          Zmiana wachty
+          Archiwum przekazań
+        </Link>
+        <Link className={buttonVariants({ variant: "ghost" })} href="/admin/globals/settings">
+          Ustawienia statku
         </Link>
       </div>
+      <BriefPanel />
       <DemoTools demo={demoToolsEnabled()} />
     </section>
   );

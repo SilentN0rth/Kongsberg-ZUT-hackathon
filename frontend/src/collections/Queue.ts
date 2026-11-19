@@ -67,6 +67,7 @@ export const Queue: CollectionConfig = {
     useAsTitle: "clientId",
     defaultColumns: ["clientId", "status", "attempts", "lastError", "createdAt", "processedAt"],
     group: "Zgłoszenia",
+    components: { beforeListTable: ["/admin/LiveRefresh#LiveRefresh"] },
     description: "Zgłoszenia przyjęte z telefonów. Wpisy FAILED mają podany powód; popraw dane i przetwórz kolejkę ponownie.",
   },
   defaultSort: "-createdAt",

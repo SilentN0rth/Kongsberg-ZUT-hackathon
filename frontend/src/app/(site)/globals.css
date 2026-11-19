@@ -154,8 +154,7 @@
   }
 
   .wb-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 32px rgb(0 214 230 / 0.32);
+    filter: brightness(1.07);
   }
 }
 
@@ -181,7 +180,7 @@
     transition: none;
   }
   .wb-lift:hover {
-    transform: none;
+    filter: none;
   }
 }
 
@@ -377,3 +376,51 @@ button,
   }
 }
 /* rev 9 */
+/* rev 10 */
+
+/* Hint arrow: waits ~2.5 s, nudges briefly, then rests for a long while (attention loop, not a constant bounce). */
+@keyframes wb-nudge {
+  0%,
+  14%,
+  100% {
+    transform: translateY(0);
+  }
+  7% {
+    transform: translateY(4px);
+  }
+}
+
+.wb-nudge {
+  animation: wb-nudge 6s ease-in-out 2.5s infinite;
+}
+/* rev 11 */
+
+/*
+ * Płynne przejście między dokumentami (/ <-> /admin to osobne root layouty, więc to normalna nawigacja, nie SPA).
+ * Chrome/Edge/Brave i Safari robią przenikanie zamiast „odświeżenia”; stary obraz zostaje, a nowa strona pojawia się nad nim.
+ * Reguła musi być w CSS obu dokumentów (tu i w panelu: src/app/(payload)/admin-theme.css).
+ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: none;
+}
+
+::view-transition-new(root) {
+  animation: wb-page-in 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes wb-page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+/* rev 12 */

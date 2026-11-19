@@ -154,6 +154,29 @@
   font-size: 0.875rem;
 }
 
+.wb-admin-subtitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.wb-admin-pre {
+  margin: 0;
+  max-height: 20rem;
+  overflow: auto;
+  padding: 1rem;
+  border-radius: var(--style-radius-m);
+  background: var(--theme-elevation-100);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.wb-admin-live {
+  margin-bottom: 0.75rem;
+}
+
 /* Linki-przyciski HeroUI nie mają podkreślenia ani koloru linku Payload. */
 .wb-admin-panel a.button {
   text-decoration: none;
@@ -169,4 +192,542 @@
   .app-header {
     background: var(--theme-bg);
   }
+}
+
+/*
+ * Płynne przejście między dokumentami (/ <-> /admin to osobne root layouty, więc to normalna nawigacja, nie SPA).
+ * Chrome/Edge/Brave i Safari robią przenikanie zamiast „odświeżenia”; stary obraz zostaje, a nowa strona pojawia się nad nim.
+ * Reguła musi być w CSS obu dokumentów (tu i w panelu: src/app/(payload)/admin-theme.css).
+ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: none;
+}
+
+::view-transition-new(root) {
+  animation: wb-page-in 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes wb-page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Przeglądarki bez View Transitions (np. Firefox): łagodne wejście panelu z granatu strony głównej. */
+@supports not (view-transition-name: none) {
+  html {
+    background: var(--wb-deep);
+  }
+  body {
+    animation: wb-page-in 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+}
+/* rev 12 */
+
+/* ==========================================================================
+   Panel mostka w stylu aplikacji: jasne szkło, miękkie karty, pigułki.
+   (zaokrąglenia 14-28 px, białe półprzezroczyste powierzchnie, poświata marki za treścią)
+   ========================================================================== */
+
+:root {
+  --wb-glass: rgb(255 255 255 / 0.58);
+  --wb-glass-strong: rgb(255 255 255 / 0.8);
+  --wb-glass-border: rgb(255 255 255 / 0.85);
+  --wb-ink: #0e1214;
+  --wb-slate: #5c6972;
+  --wb-line: rgb(3 42 57 / 0.09);
+  --wb-shadow: 0 10px 28px rgb(3 42 57 / 0.09);
+  --wb-aurora:
+    radial-gradient(70% 32% at 12% 8%, rgb(63 186 194 / 0.45), transparent 72%),
+    radial-gradient(55% 30% at 96% 40%, rgb(0 214 230 / 0.26), transparent 72%),
+    radial-gradient(75% 38% at 18% 98%, rgb(7 124 142 / 0.24), transparent 72%),
+    linear-gradient(180deg, #ffffff 0%, #e8f6f7 55%, #d2eff2 100%);
+}
+
+html[data-theme="light"] body,
+html[data-theme="light"] .template-default,
+html[data-theme="light"] .template-default__wrap {
+  background: var(--wb-aurora);
+  background-attachment: fixed;
+  color: var(--wb-ink);
+}
+
+html[data-theme="light"] .template-default__wrap {
+  background: transparent;
+}
+
+/* --- Panel boczny: szkło, duże pozycje-pigułki, aktywna pozycja jako biała karta --- */
+html[data-theme="light"] .nav {
+  background: rgb(255 255 255 / 0.62);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  backdrop-filter: blur(24px) saturate(120%);
+  border-right: 1px solid var(--wb-glass-border);
+}
+
+.nav__scroll {
+  gap: 0.25rem;
+}
+
+.nav-group {
+  margin-bottom: 0.75rem;
+}
+
+.nav-group__toggle {
+  color: var(--wb-slate);
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+}
+
+.nav-group__label {
+  font-weight: 500;
+}
+
+.nav__link {
+  padding: 0.65rem 0.9rem;
+  margin-bottom: 0.125rem;
+  border-radius: 14px;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--wb-slate);
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.nav a.nav__link:hover,
+.nav a.nav__link:focus-visible {
+  background: rgb(255 255 255 / 0.6);
+  color: var(--wb-ink);
+  text-decoration: none;
+}
+
+.nav__link.active,
+.nav__link:has(.nav__link-indicator) {
+  background: var(--wb-glass-strong);
+  color: var(--theme-elevation-1000);
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgb(3 42 57 / 0.08);
+}
+
+.nav__link-indicator {
+  display: none;
+}
+
+.nav__controls {
+  padding-top: 0.75rem;
+}
+
+/* Marka i karta wachty w panelu bocznym */
+.wb-nav-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0 0 1.25rem;
+  padding: 0.25rem 0.5rem;
+  text-decoration: none;
+}
+
+.wb-nav-brand__vessel {
+  padding-left: 3.5rem;
+  margin-top: -0.25rem;
+  color: var(--wb-slate);
+  font-size: 0.8125rem;
+}
+
+.wb-nav-watch {
+  margin-top: auto;
+  padding: 1rem;
+  border-radius: 24px;
+  border: 1px solid var(--wb-glass-border);
+  background: var(--wb-glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), var(--wb-shadow);
+}
+
+.wb-nav-watch__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  color: var(--wb-ink);
+}
+
+.wb-nav-watch__window {
+  margin: 0.125rem 0 0.75rem;
+  color: var(--wb-slate);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Nagłówki widoków --- */
+.list-header__title,
+.doc-header__title,
+.collections__label,
+.dashboard h1,
+h1 {
+  color: var(--wb-ink);
+  letter-spacing: -0.025em;
+}
+
+.list-header {
+  padding-top: 1.25rem;
+}
+
+.list-header__title,
+.doc-header__title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.collections__label {
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+/* --- Pigułki: przyciski i zakładki --- */
+.btn--style-primary,
+.btn--style-secondary,
+.btn--style-pill,
+.btn--style-tab,
+.btn--style-none {
+  border-radius: 9999px;
+}
+
+.btn--style-pill {
+  --bg-color: var(--wb-glass-strong);
+  --color: var(--wb-ink);
+  --hover-bg: #fff;
+  border: 1px solid var(--wb-glass-border);
+}
+
+.doc-tabs__tabs-container {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: rgb(14 18 20 / 0.06);
+}
+
+.doc-tab {
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  color: var(--wb-slate);
+}
+
+.doc-tab--active {
+  background: #fff;
+  color: var(--wb-ink);
+  box-shadow: 0 1px 6px rgb(3 42 57 / 0.12);
+}
+
+/* --- Zakładki statusów nad listą zgłoszeń (ReportTabs) --- */
+.wb-tabs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.wb-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: rgb(14 18 20 / 0.06);
+}
+
+.wb-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9999px;
+  color: var(--wb-slate);
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.wb-tab:hover {
+  color: var(--wb-ink);
+  background: rgb(255 255 255 / 0.5);
+  text-decoration: none;
+}
+
+.wb-tab--active,
+.wb-tab--active:hover {
+  background: #fff;
+  color: var(--wb-ink);
+  box-shadow: 0 1px 6px rgb(3 42 57 / 0.12);
+}
+
+.wb-tab__count {
+  font-variant-numeric: tabular-nums;
+  color: var(--wb-slate);
+}
+
+/* --- Tabele: karta ze szkła, wiersze bez zebry --- */
+html[data-theme="light"] .table {
+  padding: 0.5rem;
+  border-radius: 24px;
+  border: 1px solid var(--wb-glass-border);
+  background: var(--wb-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+}
+
+.table thead th {
+  padding: 0.75rem 1rem;
+  color: var(--wb-slate);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.table tbody tr,
+.table tbody tr:nth-child(odd),
+.table tbody tr:nth-child(even) {
+  background: transparent;
+  border-bottom: 1px solid var(--wb-line);
+  transition: background-color 140ms ease;
+}
+
+.table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.table tbody tr:hover {
+  background: rgb(255 255 255 / 0.65);
+}
+
+.table td {
+  padding: 0.95rem 1rem;
+  font-size: 1rem;
+}
+
+.table td a,
+.default-cell__first-cell {
+  font-weight: 600;
+  color: var(--wb-ink);
+  text-decoration: none;
+}
+
+.table td a:hover {
+  text-decoration: underline;
+}
+
+/* --- Pola formularzy i wyszukiwarka: duże, zaokrąglone, szklane --- */
+.field-type input:not([type="checkbox"]):not([type="radio"]),
+.field-type textarea,
+.rs__control,
+.search-filter__input,
+.date-time-picker__input-wrapper {
+  border-radius: 14px;
+  border: 1px solid var(--wb-line);
+  background: rgb(255 255 255 / 0.75);
+}
+
+.field-type input:focus,
+.field-type textarea:focus,
+.rs__control--is-focused {
+  border-color: var(--wb-accent-strong);
+  box-shadow: 0 0 0 3px rgb(63 186 194 / 0.25);
+}
+
+.field-label {
+  color: var(--wb-slate);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.list-controls__wrap,
+.search-filter {
+  border-radius: 9999px;
+}
+
+/* --- Widok pojedynczego dokumentu: pasek akcji, karta pól, karta boczna --- */
+html[data-theme="light"] .doc-controls {
+  background: rgb(255 255 255 / 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--wb-glass-border);
+}
+
+/* Pola dokumentu w kartach ze szkła: główna po lewej, boczna po prawej, z marginesami jak w widoku mostka. */
+html[data-theme="light"] .document-fields__edit {
+  margin: 1.25rem 0 1.25rem var(--gutter-h);
+  padding: 1.5rem;
+  border: 1px solid var(--wb-glass-border);
+  border-radius: 24px;
+  background: var(--wb-glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+}
+
+html[data-theme="light"] .document-fields__sidebar-wrap {
+  border-left: 0;
+}
+
+html[data-theme="light"] .document-fields--no-sidebar .document-fields__edit {
+  margin-right: var(--gutter-h);
+}
+
+html[data-theme="light"] .document-fields__sidebar {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 1.25rem var(--gutter-h) 1.25rem 1.25rem;
+  padding: 0.5rem 0.5rem 1rem;
+  border: 1px solid var(--wb-glass-border);
+  border-radius: 24px;
+  background: var(--wb-glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+}
+
+/* Zakładki pól (np. w ustawieniach statku): pigułki zamiast linii z podkreśleniem. */
+.tabs-field__tabs-wrap {
+  overflow: visible;
+}
+
+.tabs-field__tabs {
+  min-width: 0;
+  width: fit-content;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-bottom: 0;
+  border-radius: 9999px;
+  background: rgb(14 18 20 / 0.06);
+}
+
+.tabs-field__tabs::before,
+.tabs-field__tabs::after,
+.tabs-field__tab-button::after {
+  display: none;
+}
+
+.tabs-field__tab-button {
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.tabs-field__tab-button--active {
+  background: #fff;
+  box-shadow: 0 1px 6px rgb(3 42 57 / 0.12);
+}
+
+/* Payload ustawia root na 13 px, a HeroUI liczy w rem: przyciski i chipy dostają jawne rozmiary. */
+.button {
+  border: 0;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.button--sm {
+  font-size: 13px;
+}
+
+.button--outline {
+  border: 1px solid rgb(3 42 57 / 0.2);
+}
+
+.chip {
+  font-size: 13px;
+  line-height: 1.5;
+  padding-inline: 0.625rem;
+}
+
+.chip--lg {
+  font-size: 14px;
+}
+
+.wb-verify {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.5rem 0 1.25rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgb(63 186 194 / 0.12);
+}
+
+.wb-verify__actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.wb-verify__actions .button {
+  width: 100%;
+  height: 44px;
+  justify-content: center;
+}
+
+/* --- Pulpit: karty kolekcji jako szklane kafle --- */
+html[data-theme="light"] .card {
+  border-radius: 20px;
+  border: 1px solid var(--wb-glass-border);
+  background: var(--wb-glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+  transition: box-shadow 200ms ease, background-color 200ms ease;
+}
+
+html[data-theme="light"] .card:hover {
+  background: var(--wb-glass-strong);
+  box-shadow: inset 0 1px 0 #fff, 0 16px 36px rgb(3 42 57 / 0.14);
+}
+
+html[data-theme="light"] .wb-admin-panel {
+  border: 1px solid var(--wb-glass-border);
+  background: var(--wb-glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+}
+
+html[data-theme="light"] .app-header {
+  background: rgb(255 255 255 / 0.55);
+  box-shadow: 0 0.5px 0 rgb(3 42 57 / 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__link,
+  .wb-tab,
+  .table tbody tr,
+  html[data-theme="light"] .card {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html[data-theme="light"] .nav,
+  html[data-theme="light"] .table,
+  html[data-theme="light"] .doc-controls,
+  html[data-theme="light"] .card {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #fff;
+  }
+}
+
+/* Konto i preferencje: pole danych logowania jako miękka karta wewnątrz karty, bez przerwanej linii. */
+.auth-fields {
+  border-radius: 18px;
+  background: rgb(14 18 20 / 0.04);
+}
+
+.payload-settings {
+  border-top-color: var(--wb-line);
 }

@@ -12,7 +12,8 @@ export const Reports: CollectionConfig = {
     defaultColumns: ["device", "symptom", "priority", "status", "reportedAt", "verify"],
     listSearchableFields: ["symptom", "note"],
     group: "Zgłoszenia",
-    description: "Zgłoszenia od załogi do weryfikacji przez oficera. Statusy zmieniasz przyciskami na liście.",
+    description: "Zgłoszenia od załogi do weryfikacji. Lista odświeża się na żywo, statusy zmieniasz przyciskami.",
+    components: { beforeListTable: ["/admin/ReportTabs#ReportTabs"] },
   },
   defaultSort: "-reportedAt",
   access: {
@@ -74,7 +75,7 @@ export const Reports: CollectionConfig = {
       name: "verify",
       type: "ui",
       label: "Weryfikacja",
-      admin: { components: { Cell: "/admin/cells/VerifyCell#VerifyCell", Field: "/admin/fields/VerifyField#VerifyField" } },
+      admin: { position: "sidebar", components: { Cell: "/admin/cells/VerifyCell#VerifyCell", Field: "/admin/fields/VerifyField#VerifyField" } },
     },
   ],
 };

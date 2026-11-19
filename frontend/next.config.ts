@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [{ source: "/legacy-api/:path*", destination: `${BACKEND_URL}/api/:path*` }];
   },
+  // Dawny widok /mostek został zastąpiony panelem CMS.
+  async redirects() {
+    return [{ source: "/mostek", destination: "/admin", permanent: false }];
+  },
   turbopack: {
     rules: {
       "*.css": {

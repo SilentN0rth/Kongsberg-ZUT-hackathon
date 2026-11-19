@@ -93,8 +93,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    settings: Setting;
+  };
+  globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -141,7 +145,7 @@ export interface Device {
   createdAt: string;
 }
 /**
- * Zgłoszenia od załogi do weryfikacji przez oficera. Statusy zmieniasz przyciskami na liście.
+ * Zgłoszenia od załogi do weryfikacji. Lista odświeża się na żywo, statusy zmieniasz przyciskami.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "reports".
@@ -212,7 +216,7 @@ export interface Handover {
  */
 export interface User {
   id: number;
-  name?: string | null;
+  name: string;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -435,6 +439,64 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Nazwa statku, strefa czasowa, grafik wacht i zachowanie panelu.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  /**
+   * Pojawia się w panelu i w briefie zmiany.
+   */
+  vesselName: string;
+  /**
+   * Godziny w briefie i bieżąca wachta liczone są w tej strefie.
+   */
+  timezone: 'Europe/Warsaw' | 'Europe/Oslo' | 'Europe/London' | 'UTC';
+  briefHeader: string;
+  /**
+   * Przykładowy system 4/8. Zmień nazwy, godziny i role na rzeczywiste.
+   */
+  watches?:
+    | {
+        label: string;
+        from: string;
+        to: string;
+        role?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Jak często listy zgłoszeń i kolejki sprawdzają nowe wpisy.
+   */
+  liveRefreshSeconds: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  vesselName?: T;
+  timezone?: T;
+  briefHeader?: T;
+  watches?:
+    | T
+    | {
+        label?: T;
+        from?: T;
+        to?: T;
+        role?: T;
+        id?: T;
+      };
+  liveRefreshSeconds?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

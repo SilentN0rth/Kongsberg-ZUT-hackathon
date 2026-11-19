@@ -11,7 +11,9 @@ import { Handovers } from "@/collections/Handovers";
 import { Queue } from "@/collections/Queue";
 import { Reports } from "@/collections/Reports";
 import { Users } from "@/collections/Users";
+import { Settings } from "@/globals/Settings";
 import { migrations } from "@/migrations";
+import { DEFAULT_WATCHES } from "@/lib/watch";
 import { DEVICES, SCENARIOS, demoToolsEnabled, ensureDevices, loadScenario, simulate, type Scenario } from "@/lib/server/demo";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -60,12 +62,17 @@ export default buildConfig({
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: " – WatchBrief" },
     dateFormat: "dd.MM.yyyy HH:mm",
+    // Jeden, jasny motyw w stylu aplikacji (bez przełącznika jasny/ciemny).
+    theme: "light",
     components: {
       graphics: { Logo: "/admin/Logo#Logo", Icon: "/admin/Icon#Icon" },
       beforeDashboard: ["/admin/BeforeDashboard#BeforeDashboard"],
+      beforeNavLinks: ["/admin/NavBrand#NavBrand"],
+      afterNavLinks: ["/admin/NavWatch#NavWatch"],
     },
   },
   collections: [Devices, Reports, Queue, Handovers, Users],
+  globals: [Settings],
   endpoints: demoEndpoints,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
@@ -78,5 +85,11 @@ export default buildConfig({
   onInit: async (payload) => {
     // Jak seed-on-empty w Javie: pierwsze uruchomienie dostaje listę urządzeń.
     if (await ensureDevices(payload)) payload.logger.info(`Dodano ${DEVICES.length} urządzeń startowych`);
+    // Ustawienia statku: pierwszy zapis z domyślnym grafikiem wacht.
+    const settings = await payload.findGlobal({ slug: "settings", depth: 0 }).catch(() => null);
+    if (settings && !settings.watches?.length) {
+      await payload.updateGlobal({ slug: "settings", data: { watches: DEFAULT_WATCHES } });
+      payload.logger.info("Zapisano domyślne ustawienia statku");
+    }
   },
 });

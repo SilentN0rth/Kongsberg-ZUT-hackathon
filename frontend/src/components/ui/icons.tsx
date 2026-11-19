@@ -190,15 +190,6 @@ export const CloudOffIcon = (p: P) => (
   </Icon>
 );
 
-export const ListIcon = (p: P) => (
-  <Icon {...p}>
-    <path d="M9 6h11M9 12h11M9 18h11" />
-    <circle cx="4.5" cy="6" r="1" />
-    <circle cx="4.5" cy="12" r="1" />
-    <circle cx="4.5" cy="18" r="1" />
-  </Icon>
-);
-
 export const ArrowRightIcon = (p: P) => (
   <Icon {...p}>
     <path d="M5 12h14" />
@@ -206,14 +197,4 @@ export const ArrowRightIcon = (p: P) => (
   </Icon>
 );
 
-export const PauseIcon = (p: P) => (
-  <Icon {...p}>
-    <path d="M9 5v14M15 5v14" />
-  </Icon>
-);
 
-export const PlayIcon = (p: P) => (
-  <Icon {...p}>
-    <path d="M8 5.5v13l11-6.5z" />
-  </Icon>
-);

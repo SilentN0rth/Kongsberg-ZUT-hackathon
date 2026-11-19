@@ -1,7 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, type Device, type ReportOut } from "@/lib/api";
+import { api, type Device, type ReportOut, type ShipSettingsDoc } from "@/lib/api";
+
+export function useSettings() {
+  const [settings, setSettings] = useState<ShipSettingsDoc | null>(null);
+  useEffect(() => {
+    let alive = true;
+    api
+      .settings()
+      .then((s) => alive && setSettings(s))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return settings;
+}
 
 export function useDevices() {
   const [devices, setDevices] = useState<Device[] | null>(null);
@@ -19,14 +34,10 @@ export function useDevices() {
   return { devices, error };
 }
 
-// Pełna lista zgłoszeń odpytywana cyklicznie (zmiany statusu nie zmieniają receivedAt, więc `since` by ich nie pokazało).
+// Lista zgłoszeń odpytywana cyklicznie (załoga widzi, które urządzenia mają otwarte zgłoszenia).
 export function useReports(intervalMs = 2500) {
   const [reports, setReports] = useState<ReportOut[] | null>(null);
-  const [online, setOnline] = useState(true);
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
-  const [fresh, setFresh] = useState<ReadonlySet<string>>(new Set());
   const last = useRef("");
-  const known = useRef<Set<string> | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -35,20 +46,9 @@ export function useReports(intervalMs = 2500) {
       if (key !== last.current) {
         last.current = key;
         setReports(next);
-        // Reports that appeared after the first load are "fresh" for a few seconds.
-        if (known.current) {
-          const added = next.filter((r) => !known.current!.has(r.id)).map((r) => r.id);
-          if (added.length) {
-            setFresh((f) => new Set([...f, ...added]));
-            setTimeout(() => setFresh((f) => new Set([...f].filter((id) => !added.includes(id)))), 8000);
-          }
-        }
-        known.current = new Set(next.map((r) => r.id));
       }
-      setOnline(true);
-      setUpdatedAt(new Date());
     } catch {
-      setOnline(false);
+      /* brak sieci: zostaje poprzednia lista */
     }
   }, []);
 
@@ -62,10 +62,5 @@ export function useReports(intervalMs = 2500) {
     };
   }, [refresh, intervalMs]);
 
-  const patch = useCallback((id: string, changes: Partial<ReportOut>) => {
-    setReports((rs) => rs?.map((r) => (r.id === id ? { ...r, ...changes } : r)) ?? rs);
-    last.current = "";
-  }, []);
-
-  return { reports, online, updatedAt, fresh, refresh, patch };
+  return { reports };
 }

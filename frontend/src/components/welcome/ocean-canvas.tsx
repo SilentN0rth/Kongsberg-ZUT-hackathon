@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { PauseIcon, PlayIcon } from "@/components/ui/icons";
+import { useEffect, useRef } from "react";
 import { useMedia } from "@/lib/use-media";
 
 const VERT = `attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }`;
@@ -66,13 +65,12 @@ void main(){
 
 const STILL_TIME = 18; // klatka spoczynkowa (reduced motion, brak WebGL w ruchu)
 
-// Tło hero: shader na canvasie, pod nim zawsze gradient CSS (gdy WebGL jest niedostępny). Ruch ma przycisk pauzy.
+// Tło hero: shader na canvasie, pod nim zawsze gradient CSS (gdy WebGL jest niedostępny).
 export function OceanCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawRef = useRef<((t: number) => void) | null>(null);
   const reduced = useMedia("(prefers-reduced-motion: reduce)");
-  const [userPaused, setUserPaused] = useState(false);
-  const paused = userPaused || reduced;
+  const paused = reduced; // przy reduced motion woda stoi na jednej klatce
 
   // jednorazowa inicjalizacja WebGL
   useEffect(() => {
@@ -166,17 +164,6 @@ export function OceanCanvas() {
         className="absolute inset-0 bg-[radial-gradient(70%_60%_at_65%_40%,#077c8e_0%,#08435a_45%,#032a39_100%)]"
       />
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 size-full" />
-      {!reduced && (
-        <button
-          type="button"
-          onClick={() => setUserPaused((p) => !p)}
-          aria-pressed={userPaused}
-          aria-label={userPaused ? "Wznów animację tła" : "Wstrzymaj animację tła"}
-          className="wb-glass-dark wb-press absolute bottom-6 left-6 z-20 grid size-11 place-items-center rounded-full lg:bottom-10 lg:left-12"
-        >
-          {userPaused ? <PlayIcon width={20} height={20} /> : <PauseIcon width={20} height={20} />}
-        </button>
-      )}
     </>
   );
 }

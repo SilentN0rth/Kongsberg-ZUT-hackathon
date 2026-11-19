@@ -33,6 +33,3 @@ export const PRIORITY_LABEL: Record<Priority, string> = Object.fromEntries(
 export const PRIORITY_RANK: Record<Priority, number> = { CRITICAL: 3, MEDIUM: 2, LOW: 1 };
 
 export const SECTORS = ["A", "B", "C", "D"] as const;
-
-// Próbka zmiany do nagłówków (backend nie przechowuje grafiku wacht).
-export const WATCH = { label: "Wachta 4/8", window: "00:00–04:00" } as const;
