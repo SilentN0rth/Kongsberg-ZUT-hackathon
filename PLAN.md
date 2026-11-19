@@ -148,3 +148,15 @@ scripts/demo.sh reset
 ```
 
 **Testy backendu (`pnpm test:api`):** `DemoScenariosTest` sprawdza każdy scenariusz, symulator i brief; `MockScanner` (w `src/test`) to mock skanera z kolejką offline – wysyła zgłoszenia częściowo, ponawia je i weryfikuje idempotentność po `id`.
+
+## Model danych (baza H2, plik `backend/data/watchbrief.mv.db`)
+
+| Tabela | Pola | Skąd dane |
+|---|---|---|
+| `device` | `id` (slug z kodu, np. `pompa-03`), `sector`, `name`, `serial` | Seed (`DemoSeeder`); brak endpointu do dodawania |
+| `report` | `id` (UUID z klienta), `deviceId`, `symptom`, `priority` (LOW/MEDIUM/CRITICAL), `note`, `createdAt` (czas zdarzenia), `receivedAt` (czas odebrania przez backend), `status` (NEW/ACKNOWLEDGED/RESOLVED) | `POST /api/reports`, status zmienia `PATCH /api/reports/{id}/status` |
+| `handover` | `id`, `createdAt`, `briefText`, `takenOverAt` | `POST /api/handover/brief`, przejęcie: `POST /api/handover/{id}/take` |
+
+Alertów jako osobnego mechanizmu nie ma: o „alarmie” decyduje `priority = CRITICAL` w zgłoszeniu, a brief zawsze wypisuje je w sekcji KRYTYCZNE na górze.
+
+**Czas:** w bazie i w JSON-ie wszystkie znaczniki czasu są w UTC (ISO-8601 z `Z`) i frontend przelicza je na czas lokalny. Tekst briefu używa strefy `Europe/Warsaw` (zmiana lato/zima automatyczna); inną strefę ustawia zmienna `watchbrief.timezone`.
