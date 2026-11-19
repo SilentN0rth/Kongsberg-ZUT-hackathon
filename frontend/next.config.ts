@@ -1,15 +1,14 @@
 import type { NextConfig } from "next";
+import { withPayload } from "@payloadcms/next/withPayload";
 
-// Backend w Javie (Spring Boot, katalog backend/). Przegladarka wola tylko /api/*
-// na tym samym originie, wiec nie ma CORS, a service worker widzi jedno zrodlo.
+// Stary backend w Javie (Spring Boot, katalog backend/) zostaje dostępny pod /legacy-api/*.
+// Dane aplikacji obsługuje teraz Payload CMS pod /api/* (ten sam proces Next.js, lokalna baza SQLite).
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${BACKEND_URL}/api/:path*` }];
+    return [{ source: "/legacy-api/:path*", destination: `${BACKEND_URL}/api/:path*` }];
   },
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
@@ -20,4 +19,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig, { devBundleServerPackages: false });

@@ -1,0 +1,15 @@
+/*
+ * HeroUI w panelu Payload, bez resetów i bez globalnych utilities:
+ *  - wchodzą tylko komponenty Button i Chip (ich klasy .button/.chip nie kolidują z CSS Payload),
+ *  - utilities Tailwinda są wyłączone (source(none)), więc nie nadpisują klas Payload (.table, .hidden itd.).
+ * Karty, tabele i szuflady HeroUI NIE są tu ładowane: Payload ma własne .card, .table i .drawer.
+ */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "@heroui/styles/themes/shared/theme.css";
+@import "@heroui/styles/themes/default/variables.css" layer(theme);
+/* tylko definicje (@utility, @custom-variant): bez użycia nic nie trafia do wynikowego CSS */
+@import "@heroui/styles/utilities";
+@import "@heroui/styles/variants";
+@import "@heroui/styles/components/button.css" layer(components);
+@import "@heroui/styles/components/chip.css" layer(components);

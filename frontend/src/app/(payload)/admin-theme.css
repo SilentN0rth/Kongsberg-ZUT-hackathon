@@ -1,0 +1,172 @@
+/*
+ * Motyw panelu Payload w kolorach marki (paleta z kongsbergmaritime.com).
+ * Payload buduje jasny i ciemny motyw z jednej skali --color-base-*, więc wystarczy ją przebarwić.
+ * Wszystko jest poza warstwą @layer, więc wygrywa z domyślnymi stylami Payload (warstwa payload-default).
+ */
+:root {
+  --color-base-0: #ffffff;
+  --color-base-50: #f3f4f4;
+  --color-base-100: #e6e9ea;
+  --color-base-150: #dadedf;
+  --color-base-200: #cdd2d5;
+  --color-base-250: #c1c7ca;
+  --color-base-300: #b4bcbf;
+  --color-base-350: #a8b1b5;
+  --color-base-400: #9ba6aa;
+  --color-base-450: #8f9ba0;
+  --color-base-500: #829095;
+  --color-base-550: #76848a;
+  --color-base-600: #6a7980;
+  --color-base-650: #5d6e75;
+  --color-base-700: #51636b;
+  --color-base-750: #445860;
+  --color-base-800: #384d55;
+  --color-base-850: #2b414b;
+  --color-base-900: #1f3640;
+  --color-base-950: #122b36;
+  --color-base-1000: #06202b;
+
+  --wb-accent: #3fbac2;
+  --wb-accent-hover: #5fcdd4;
+  --wb-accent-strong: #077c8e;
+  --wb-deep: #032a39;
+
+  /* Tokeny HeroUI w panelu (przyciski i chipy): paleta marki zamiast domyślnego niebieskiego */
+  --accent: #3fbac2;
+  --accent-foreground: #0e1214;
+  --focus: #00d6e6;
+  --danger: #d71d15;
+  --danger-foreground: #ffffff;
+  --warning: #f2a93b;
+  --warning-foreground: #0e1214;
+
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+  --style-radius-s: 6px;
+  --style-radius-m: 10px;
+  --style-radius-l: 16px;
+}
+
+/* Przyciski: główny w kolorze akcentu (jak przycisk główny na kongsbergmaritime.com). */
+.btn--style-primary {
+  --bg-color: var(--wb-accent);
+  --color: #0e1214;
+  --hover-bg: var(--wb-accent-hover);
+  --hover-color: #0e1214;
+}
+
+.btn--style-secondary {
+  --btn-border: 1px solid var(--wb-accent-strong);
+  --hover-btn-border: 1px solid var(--wb-accent);
+}
+
+/* Linki i zaznaczenia */
+::selection {
+  background: rgb(63 186 194 / 0.4);
+}
+
+/* Ekran logowania: ciemne tło głębi z poświatą, formularz jako szklana karta. */
+.template-minimal {
+  background:
+    radial-gradient(60% 50% at 15% 10%, rgb(7 124 142 / 0.55), transparent 70%),
+    radial-gradient(50% 45% at 90% 85%, rgb(0 214 230 / 0.22), transparent 70%),
+    var(--wb-deep);
+  --theme-text: #f3f6f7;
+  --theme-bg: var(--wb-deep);
+  color: #f3f6f7;
+}
+
+.template-minimal__wrap {
+  padding: 2rem;
+  border-radius: var(--style-radius-l);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 24px 60px rgb(0 0 0 / 0.35);
+}
+
+.template-minimal .btn--style-primary {
+  --bg-color: var(--wb-accent);
+}
+
+/* Nagłówek panelu: szkło z rozmyciem, treść przewija się pod spodem. */
+.app-header {
+  background: color-mix(in srgb, var(--theme-bg) 70%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+}
+
+/* Pulpit mostka (komponent BeforeDashboard) */
+.wb-admin-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wb-admin-logo__text {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--theme-text);
+}
+
+.wb-admin-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: var(--style-radius-l);
+  border: 1px solid var(--theme-elevation-100);
+  background: color-mix(in srgb, var(--theme-elevation-50) 70%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+}
+
+.wb-admin-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.wb-admin-row,
+.wb-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wb-admin-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wb-admin-muted {
+  margin: 0;
+  color: var(--theme-elevation-500);
+}
+
+.wb-admin-error {
+  color: var(--theme-error-500);
+  font-size: 0.875rem;
+}
+
+/* Linki-przyciski HeroUI nie mają podkreślenia ani koloru linku Payload. */
+.wb-admin-panel a.button {
+  text-decoration: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .app-header,
+  .wb-admin-panel,
+  .template-minimal__wrap {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .app-header {
+    background: var(--theme-bg);
+  }
+}
