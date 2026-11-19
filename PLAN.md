@@ -108,3 +108,14 @@ Głos, czat z manualami (RAG), logowanie i profile, prawdziwe czujniki i integra
 | POST | `/api/demo/reset` | Reset danych demo |
 
 Uruchomienie: `pnpm dev:api` (port 8080) i `pnpm dev:web` (port 3000) z korzenia repo.
+
+## Wdrożenie backendu (bez laptopa): Render free + Neon free
+
+1. **Neon** (neon.tech): załóż projekt Postgres, skopiuj *connection string* (`postgres://user:haslo@host/db?sslmode=require`). Backend sam zamienia go na JDBC, nic nie przerabiasz.
+2. **Render**: *New → Blueprint*, wskaż to repo i gałąź. `render.yaml` utworzy usługę `watchbrief-api` z `backend/Dockerfile`. W panelu ustaw:
+   - `DATABASE_URL` = connection string z Neona,
+   - `CORS_ORIGINS` = adres frontu (opcjonalnie; przy rewrite Next niepotrzebne).
+3. Sprawdź `https://<usluga>.onrender.com/api/health` (powinno zwrócić `ok`) oraz `/api/devices`. Przy pierwszym starcie baza zasieje się danymi demo.
+4. **Vercel** (Root Directory = `frontend`): zmienna `BACKEND_URL` = `https://<usluga>.onrender.com`.
+5. **Usypianie:** darmowy Render usypia usługę po ok. 15 min bez ruchu, a zimny start Springa trwa ok. pół minuty. Skonfiguruj darmowy monitor (np. UptimeRobot) pingujący `/api/health` co 5 min, a przed demem i tak wejdź na ten adres ręcznie.
+6. Darmowa instancja ma 512 MB RAM; JVM jest ograniczona flagami w `Dockerfile`. Zdjęcia kompresuj po stronie klienta (kilkaset KB).
