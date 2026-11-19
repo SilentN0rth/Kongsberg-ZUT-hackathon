@@ -50,7 +50,9 @@ class DemoScenariosTest {
     void criticalScenarioFeedsBrief() throws Exception {
         mvc.perform(post("/api/demo/scenarios/critical")).andExpect(status().isOk());
         mvc.perform(post("/api/handover/brief"))
-           .andExpect(jsonPath("$.text").value(containsString("krytyczne: 6")));
+           .andExpect(jsonPath("$.text").value(containsString("krytyczne: 6")))
+           .andExpect(jsonPath("$.text").value(containsString("Stan na:")))
+           .andExpect(jsonPath("$.text").value(not(containsString("UTC"))));
     }
 
     @Test
