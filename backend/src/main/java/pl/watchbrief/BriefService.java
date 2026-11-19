@@ -64,7 +64,6 @@ public class BriefService {
                   .append(d != null ? d.getName() : r.getDeviceId())
                   .append(": ").append(r.getSymptom())
                   .append(" (").append(HM.format(r.getCreatedAt())).append(" UTC");
-                if (r.getPhoto() != null) sb.append(", zdjecie");
                 sb.append(")");
                 if (r.getNote() != null && !r.getNote().isBlank()) sb.append(" - ").append(r.getNote());
                 sb.append('\n');
