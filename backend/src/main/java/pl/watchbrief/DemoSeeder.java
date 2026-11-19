@@ -1,9 +1,5 @@
 package pl.watchbrief;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -11,7 +7,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -25,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Scenariusze:
  *  - basic    5 wpisow, 1 krytyczny (domyslny, wzorcowy brief)
  *  - quiet    urzadzenia bez zadnych usterek (brief "wachta spokojna")
- *  - busy     18 wpisow rozlozonych na 8 h, czesc potwierdzona/rozwiazana, 2 ze zdjeciem
+ *  - busy     18 wpisow rozlozonych na 8 h, czesc potwierdzona/rozwiazana
  *  - critical 6 krytycznych w roznych sektorach + 3 srednie (test przeciazonego briefu)
  */
 @Component
@@ -100,7 +95,7 @@ public class DemoSeeder {
             String[] s = SYMPTOMS[rnd.nextInt(SYMPTOMS.length)];
             String note = NOTES[rnd.nextInt(NOTES.length)];
             out.add(reports.save(new Report("sim-" + UUID.randomUUID(), d.getId(), s[0],
-                    Priority.valueOf(s[1]), note, Instant.now(), null, null)));
+                    Priority.valueOf(s[1]), note, Instant.now())));
         }
         return out;
     }
@@ -111,10 +106,8 @@ public class DemoSeeder {
         for (int i = 0; i < 18; i++) {
             Device d = ds.get(rnd.nextInt(ds.size()));
             String[] s = SYMPTOMS[rnd.nextInt(SYMPTOMS.length)];
-            boolean photo = i == 3 || i == 11;
             Report r = new Report("b-" + (i + 1), d.getId(), s[0], Priority.valueOf(s[1]),
-                    NOTES[rnd.nextInt(NOTES.length)], ago(now, 10 + i * 26),
-                    photo ? samplePhoto(new Color(40 + i * 8, 90, 160)) : null, photo ? "image/png" : null);
+                    NOTES[rnd.nextInt(NOTES.length)], ago(now, 10 + i * 26));
             int roll = rnd.nextInt(100);
             if (roll < 25) r.setStatus(ReportStatus.RESOLVED);
             else if (roll < 40) r.setStatus(ReportStatus.ACKNOWLEDGED);
@@ -155,26 +148,6 @@ public class DemoSeeder {
     }
 
     private static Report demo(String id, String dev, String symptom, Priority p, String note, Instant at) {
-        return new Report(id, dev, symptom, p, note, at, null, null);
-    }
-
-    /** Maly PNG-zaslepka "zdjecia usterki" - do testow wyswietlania zdjec bez prawdziwego aparatu. */
-    static byte[] samplePhoto(Color bg) {
-        try {
-            BufferedImage img = new BufferedImage(160, 120, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = img.createGraphics();
-            g.setColor(bg);
-            g.fillRect(0, 0, 160, 120);
-            g.setColor(Color.WHITE);
-            g.drawLine(0, 0, 159, 119);
-            g.drawLine(0, 119, 159, 0);
-            g.drawRect(2, 2, 155, 115);
-            g.dispose();
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ImageIO.write(img, "png", bos);
-            return bos.toByteArray();
-        } catch (java.io.IOException e) {
-            throw new IllegalStateException(e);
-        }
+        return new Report(id, dev, symptom, p, note, at);
     }
 }

@@ -36,7 +36,7 @@ Projekty nie współdzielą plików konfiguracyjnych ani zależności. Łączy j
 
 1. **Baza:** lokalna H2 w pliku (bez instalacji, bez internetu); Postgres tylko opcjonalnie (wtedy `DATABASE_URL`).
 2. **Hosting:** brak chmury – wszystko na komputerze na mostku w sieci lokalnej (sekcja „Wdrożenie” niżej).
-3. **Zdjęcia:** na razie `bytea` w Postgresie (zdjęcia kompresowane po stronie klienta); S3/Blob tylko jeśli zabraknie miejsca.
+3. **Zdjęcia:** nie robimy – backend ich nie przechowuje (tylko urządzenie, objaw, priorytet i notatka tekstowa).
 4. **Serwist z Next 16/Turbopack:** sprawdzić, czy wystarczy `serwist` + własny `sw.ts`, czy dołożyć `@serwist/turbopack`.
 5. **Podział ról:** kto kod, kto treści i pitch.
 
@@ -69,7 +69,7 @@ Budżet: 10 h hackathonu. Bramki (🚩/🧊) z konceptu zostają.
 - **Test krytyczny na prawdziwym telefonie:** skaner ↔ komputer mostka w sieci lokalnej, service worker, otwarcie `/nowa?sektor=A&urzadzenie=pompa-03` bez sieci.
 
 ### Etap 2 – MUST: przepływ usterki (1:30–4:00)
-- Ekran „Nowa obserwacja”: zdjęcie (`input capture` + kompresja canvas), kafle urządzenie/objaw/priorytet.
+- Ekran „Nowa obserwacja”: kafle urządzenie/objaw/priorytet.
 - IndexedDB (Dexie): zapis lokalny, kolejka, licznik „Offline: N wpisów czeka”.
 - Wysyłka kolejki po powrocie sieci na `POST /api/reports`; lista wpisów „Moja wachta”.
 - 🚩 **4:00 checkpoint:** usterka offline → sync → widoczna na laptopie. Jeśli nie, upraszczamy do „Symuluj połączenie”.
@@ -98,10 +98,9 @@ Głos, czat z manualami (RAG), logowanie i profile, prawdziwe czujniki i integra
 | Metoda | Ścieżka | Opis |
 |---|---|---|
 | GET | `/api/devices`, `/api/devices/{id}` | Lista/walidacja urządzeń (slug z linku QR) |
-| POST | `/api/reports` | Nowe zgłoszenie `{id, deviceId, symptom, priority: LOW/MEDIUM/CRITICAL, note?, createdAt?, photoBase64?}`; idempotentne po `id` |
+| POST | `/api/reports` | Nowe zgłoszenie `{id, deviceId, symptom, priority: LOW/MEDIUM/CRITICAL, note?, createdAt?}`; idempotentne po `id` |
 | GET | `/api/reports[?since=ISO]` | Lista zgłoszeń (skrzynka serwisu, „Moja wachta”) |
 | PATCH | `/api/reports/{id}/status` | `NEW` / `ACKNOWLEDGED` / `RESOLVED` |
-| GET | `/api/reports/{id}/photo` | Zdjęcie |
 | POST | `/api/handover/brief` | Generuje i zapisuje Handover Brief |
 | GET | `/api/handover/latest` | Ostatni brief (204 gdy brak) |
 | POST | `/api/handover/{id}/take` | „Przejmuję wachtę” |
@@ -140,7 +139,7 @@ skaner (Android, przeglądarka) ──Wi-Fi/LAN──► komputer na mostku: bac
 
 ## Dane demo i testy
 
-**Scenariusze (`DemoSeeder`):** `basic` (5 wpisów, 1 krytyczny – wzorcowy brief), `quiet` (brak usterek), `busy` (18 wpisów z 8 h, część potwierdzona/rozwiązana, 2 ze zdjęciem-zaślepką PNG, dane stałe po każdym ładowaniu), `critical` (6 krytycznych w różnych sektorach + 3 średnie).
+**Scenariusze (`DemoSeeder`):** `basic` (5 wpisów, 1 krytyczny – wzorcowy brief), `quiet` (brak usterek), `busy` (18 wpisów z 8 h, część potwierdzona/rozwiązana, dane stałe po każdym ładowaniu), `critical` (6 krytycznych w różnych sektorach + 3 średnie).
 
 **Skrypt `scripts/demo.sh`** (adres: `BASE_URL`, domyślnie `http://localhost:8080`):
 ```

@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,11 +38,9 @@ class DemoScenariosTest {
     }
 
     @Test
-    void busyHasEighteenReportsAndSamplePhotos() throws Exception {
+    void busyHasEighteenReports() throws Exception {
         mvc.perform(post("/api/demo/scenarios/busy")).andExpect(status().isOk());
         mvc.perform(get("/api/reports")).andExpect(jsonPath("$.length()").value(18));
-        mvc.perform(get("/api/reports/b-4/photo")).andExpect(status().isOk())
-           .andExpect(content().contentType("image/png"));
         // deterministyczne: ten sam wynik po ponownym zaladowaniu
         mvc.perform(post("/api/demo/scenarios/busy")).andExpect(status().isOk());
         mvc.perform(get("/api/reports")).andExpect(jsonPath("$.length()").value(18));

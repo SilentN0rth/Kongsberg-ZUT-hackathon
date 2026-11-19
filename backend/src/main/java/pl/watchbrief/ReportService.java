@@ -1,7 +1,6 @@
 package pl.watchbrief;
 
 import java.time.Instant;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -26,21 +25,8 @@ public class ReportService {
     public ReportOut save(ReportIn in) {
         Report existing = reports.findById(in.id()).orElse(null);
         if (existing != null) return toOut(existing, deviceMap());
-        byte[] photo = null;
-        String type = null;
-        if (in.photoBase64() != null && !in.photoBase64().isBlank()) {
-            String raw = in.photoBase64();
-            type = "image/jpeg";
-            int comma = raw.indexOf(',');
-            if (raw.startsWith("data:") && comma > 0) {
-                String meta = raw.substring(5, raw.indexOf(';') > 0 ? raw.indexOf(';') : comma);
-                if (!meta.isBlank()) type = meta;
-                raw = raw.substring(comma + 1);
-            }
-            photo = Base64.getDecoder().decode(raw);
-        }
         Report r = new Report(in.id(), in.deviceId(), in.symptom(), in.priority(), in.note(),
-                in.createdAt() != null ? in.createdAt() : Instant.now(), photo, type);
+                in.createdAt() != null ? in.createdAt() : Instant.now());
         return toOut(reports.save(r), deviceMap());
     }
 
@@ -61,6 +47,6 @@ public class ReportService {
         Device d = dm.get(r.getDeviceId());
         return new ReportOut(r.getId(), r.getDeviceId(), d != null ? d.getName() : r.getDeviceId(),
                 d != null ? d.getSector() : null, r.getSymptom(), r.getPriority(), r.getNote(),
-                r.getCreatedAt(), r.getReceivedAt(), r.getStatus(), r.getPhoto() != null);
+                r.getCreatedAt(), r.getReceivedAt(), r.getStatus());
     }
 }
