@@ -6,6 +6,8 @@ import { withPayload } from "@payloadcms/next/withPayload";
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 
 const nextConfig: NextConfig = {
+  // Telefon w tej samej sieci (np. do testów skanera) łączy się po IP komputera; bez tego Next blokuje mu skrypty dev.
+  allowedDevOrigins: ["10.*.*.*", "172.*.*.*", "192.168.*.*", "*.local"],
   async rewrites() {
     return [{ source: "/legacy-api/:path*", destination: `${BACKEND_URL}/api/:path*` }];
   },

@@ -60,14 +60,19 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
-    meta: { titleSuffix: " – WatchBrief" },
+    meta: {
+      titleSuffix: " – WatchBrief",
+      applicationName: "WatchBrief",
+      icons: [{ rel: "apple-touch-icon", url: "/icons/apple-touch-icon.png" }],
+      appleWebApp: { capable: true, title: "WatchBrief", statusBarStyle: "black-translucent" },
+    },
     dateFormat: "dd.MM.yyyy HH:mm",
     // Jeden, jasny motyw w stylu aplikacji (bez przełącznika jasny/ciemny).
     theme: "light",
     components: {
       graphics: { Logo: "/admin/Logo#Logo", Icon: "/admin/Icon#Icon" },
-      beforeDashboard: ["/admin/BeforeDashboard#BeforeDashboard"],
-      beforeNavLinks: ["/admin/NavBrand#NavBrand"],
+      views: { dashboard: { Component: "/admin/Dashboard#Dashboard" } },
+      beforeLogin: ["/admin/LoginHero#LoginHero"],
       afterNavLinks: ["/admin/NavWatch#NavWatch"],
     },
   },

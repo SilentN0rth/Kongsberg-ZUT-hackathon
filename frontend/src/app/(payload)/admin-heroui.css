@@ -13,3 +13,5 @@
 @import "@heroui/styles/variants";
 @import "@heroui/styles/components/button.css" layer(components);
 @import "@heroui/styles/components/chip.css" layer(components);
+@import "@heroui/styles/components/tabs.css" layer(components);
+@import "@heroui/styles/components/separator.css" layer(components);

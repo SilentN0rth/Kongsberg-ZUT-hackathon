@@ -161,9 +161,9 @@ export function OceanCanvas() {
     <>
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(70%_60%_at_65%_40%,#077c8e_0%,#08435a_45%,#032a39_100%)]"
+        style={{ position: "absolute", inset: 0, background: "radial-gradient(70% 60% at 65% 40%, #077c8e 0%, #08435a 45%, #032a39 100%)" }}
       />
-      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 size-full" />
+      <canvas ref={canvasRef} aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
     </>
   );
 }

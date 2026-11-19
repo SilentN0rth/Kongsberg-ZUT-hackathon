@@ -64,29 +64,75 @@
   background: rgb(63 186 194 / 0.4);
 }
 
-/* Ekran logowania: ciemne tło głębi z poświatą, formularz jako szklana karta. */
+/* Ekran logowania jak strona główna: morze na pełny ekran (LoginHero), lekki duży napis i szklana karta. */
 .template-minimal {
-  background:
-    radial-gradient(60% 50% at 15% 10%, rgb(7 124 142 / 0.55), transparent 70%),
-    radial-gradient(50% 45% at 90% 85%, rgb(0 214 230 / 0.22), transparent 70%),
-    var(--wb-deep);
+  position: relative;
+  background: transparent;
   --theme-text: #f3f6f7;
   --theme-bg: var(--wb-deep);
   color: #f3f6f7;
 }
 
+.wb-login-ocean {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--wb-deep);
+}
+
+.wb-login-ocean__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgb(3 42 57 / 0.7) 0%, rgb(3 42 57 / 0.2) 45%, transparent 75%);
+}
+
+.wb-login-tagline {
+  position: fixed;
+  left: clamp(1.5rem, 4vw, 3.5rem);
+  bottom: clamp(1.5rem, 4vw, 3rem);
+  z-index: 1;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(3rem, 8vw, 7.5rem);
+  font-weight: 200;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  pointer-events: none;
+}
+
 .template-minimal__wrap {
+  position: relative;
+  z-index: 2;
   padding: 2rem;
-  border-radius: var(--style-radius-l);
-  border: 1px solid rgb(255 255 255 / 0.18);
-  background: rgb(255 255 255 / 0.08);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 28px;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(14 18 20 / 0.38);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 24px 60px rgb(0 0 0 / 0.35);
 }
 
+.wb-login-title {
+  margin: 0 0 1.25rem;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 200;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+
 .template-minimal .btn--style-primary {
-  --bg-color: var(--wb-accent);
+  --bg-color: #fff;
+  --color: var(--wb-ink);
+  --hover-bg: var(--wb-ice, #d2eff2);
+  border-radius: 9999px;
+}
+
+@media (max-width: 900px) {
+  .wb-login-tagline {
+    display: none;
+  }
 }
 
 /* Nagłówek panelu: szkło z rozmyciem, treść przewija się pod spodem. */
@@ -96,7 +142,7 @@
   backdrop-filter: blur(22px) saturate(180%);
 }
 
-/* Pulpit mostka (komponent BeforeDashboard) */
+/* Pulpit mostka (Dashboard) */
 .wb-admin-logo {
   display: inline-flex;
   align-items: center;
@@ -254,16 +300,60 @@
     linear-gradient(180deg, #ffffff 0%, #e8f6f7 55%, #d2eff2 100%);
 }
 
-html[data-theme="light"] body,
-html[data-theme="light"] .template-default,
-html[data-theme="light"] .template-default__wrap {
-  background: var(--wb-aurora);
+/*
+ * Pierwsza klatka panelu to pusty <body> (panel renderuje się dopiero po hydratacji). Żeby po zasłonie ze strony głównej
+ * nie było jasnego błysku, tło startuje w kolorze zasłony; jasna poświata wchodzi dopiero, gdy jest szablon panelu.
+ */
+html[data-theme="light"] body {
+  background:
+    radial-gradient(60% 50% at 15% 10%, rgb(7 124 142 / 0.55), transparent 70%),
+    radial-gradient(50% 45% at 90% 85%, rgb(0 214 230 / 0.22), transparent 70%),
+    #032a39;
   background-attachment: fixed;
+}
+
+/*
+ * Tło szklanego panelu leży na stałej warstwie na całe okno. Wcześniej gradient był na <body>, którego wysokość kończy się
+ * razem z treścią okna, więc przy przewijaniu poniżej zostawała biała plama.
+ */
+html[data-theme="light"]:has(.template-default) {
+  background: #d2eff2;
+}
+
+html[data-theme="light"] body:has(.template-default) {
+  background: transparent;
   color: var(--wb-ink);
 }
 
+html[data-theme="light"] body:has(.template-default)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--wb-aurora);
+  pointer-events: none;
+}
+
+html[data-theme="light"] .template-default,
 html[data-theme="light"] .template-default__wrap {
   background: transparent;
+}
+
+/* Panel wyłania się z ciemnego tła zamiast się pojawiać skokiem. */
+.template-default {
+  animation: wb-panel-in 600ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes wb-panel-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .template-default {
+    animation: none;
+  }
 }
 
 /* --- Panel boczny: szkło, duże pozycje-pigułki, aktywna pozycja jako biała karta --- */
@@ -327,23 +417,7 @@ html[data-theme="light"] .nav {
   padding-top: 0.75rem;
 }
 
-/* Marka i karta wachty w panelu bocznym */
-.wb-nav-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin: 0 0 1.25rem;
-  padding: 0.25rem 0.5rem;
-  text-decoration: none;
-}
-
-.wb-nav-brand__vessel {
-  padding-left: 3.5rem;
-  margin-top: -0.25rem;
-  color: var(--wb-slate);
-  font-size: 0.8125rem;
-}
-
+/* Karta wachty w panelu bocznym */
 .wb-nav-watch {
   margin-top: auto;
   padding: 1rem;
@@ -580,6 +654,8 @@ html[data-theme="light"] .document-fields__edit {
 
 html[data-theme="light"] .document-fields__sidebar-wrap {
   border-left: 0;
+  height: auto;
+  align-self: flex-start;
 }
 
 html[data-theme="light"] .document-fields--no-sidebar .document-fields__edit {
@@ -591,11 +667,25 @@ html[data-theme="light"] .document-fields__sidebar {
   height: auto;
   min-height: 0;
   margin: 1.25rem var(--gutter-h) 1.25rem 1.25rem;
-  padding: 0.5rem 0.5rem 1rem;
+  padding: 1.5rem;
+  overflow: visible;
   border: 1px solid var(--wb-glass-border);
   border-radius: 24px;
   background: var(--wb-glass);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+}
+
+/* Karta ma już własny padding: wewnętrzne marginesy Payload zerujemy, żeby pola nie były wcięte podwójnie. */
+html[data-theme="light"] .document-fields__sidebar-fields {
+  gap: 1.25rem;
+  padding: 0;
+}
+
+/* Na wąskim ekranie karta boczna ląduje pod główną i wypełnia szerokość. */
+@media (max-width: 1024px) {
+  html[data-theme="light"] .document-fields__sidebar {
+    margin: 0 var(--gutter-h) 1.25rem;
+  }
 }
 
 /* Zakładki pól (np. w ustawieniach statku): pigułki zamiast linii z podkreśleniem. */
@@ -730,4 +820,444 @@ html[data-theme="light"] .app-header {
 
 .payload-settings {
   border-top-color: var(--wb-line);
+}
+
+
+.wb-pill-link {
+  display: inline-flex;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 1.1rem;
+  border-radius: 9999px;
+  border: 1px solid var(--wb-glass-border);
+  background: var(--wb-glass-strong);
+  color: var(--wb-ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+
+.wb-pill-link:hover {
+  background: #fff;
+  text-decoration: none;
+}
+
+/* Tytuły widoków: lżejsze i ciaśniejsze, jak nagłówek strony głównej. */
+.list-header__title,
+.doc-header__title {
+  font-weight: 300;
+  letter-spacing: -0.035em;
+}
+
+/* Formularz logowania na ciemnej szklanej karcie: pola szklane, nie białe. */
+.template-minimal .field-type input,
+.template-minimal .field-type input:-webkit-autofill {
+  background: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.22);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+}
+
+.template-minimal .field-type input:focus {
+  border-color: var(--wb-accent);
+  box-shadow: 0 0 0 3px rgb(63 186 194 / 0.3);
+}
+
+.template-minimal .field-label {
+  color: rgb(255 255 255 / 0.8);
+}
+
+.template-minimal a {
+  color: rgb(255 255 255 / 0.85);
+}
+
+/* --- Pulpit: weryfikacja zgłoszeń (Dashboard + VerifyBoard) --- */
+.wb-dash {
+  padding: 1.5rem var(--gutter-h) 2.5rem;
+}
+.wb-dash__head {
+  margin-bottom: 1.25rem;
+}
+.wb-dash__title {
+  margin: 0;
+  font-size: 2.75rem;
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: var(--wb-ink);
+}
+.wb-dash__meta {
+  margin: 0.5rem 0 0;
+  color: var(--wb-slate);
+  font-size: 1rem;
+}
+.wb-dash__tools {
+  margin-top: 1.5rem;
+  color: var(--wb-slate);
+}
+.wb-dash__tools summary {
+  cursor: pointer;
+  width: fit-content;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+.wb-dash__tools .wb-admin-tools {
+  margin-top: 0.75rem;
+}
+.wb-board__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.wb-board .wb-tab {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+.wb-board .wb-tab--active {
+  background: #fff;
+}
+.wb-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  background: rgb(31 138 76 / 0.12);
+  color: #176b3b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.wb-live i {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.wb-live--off {
+  background: rgb(215 29 21 / 0.1);
+  color: #a8140e;
+}
+.wb-board__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(20rem, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.wb-card {
+  border: 1px solid var(--wb-glass-border);
+  border-radius: 24px;
+  background: var(--wb-glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+}
+.wb-board__list {
+  padding: 0.5rem;
+  min-height: 24rem;
+}
+.wb-board__head,
+.wb-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1.1fr 0.8fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+}
+.wb-board__head {
+  height: 2.5rem;
+  border-radius: 16px;
+  background: rgb(14 18 20 / 0.05);
+  color: var(--wb-slate);
+  font-size: 0.875rem;
+}
+.wb-board__rows {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.wb-row {
+  width: 100%;
+  padding-block: 0.875rem;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--wb-ink);
+  font: inherit;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+.wb-row:hover {
+  background: rgb(255 255 255 / 0.55);
+}
+.wb-row--active,
+.wb-row--active:hover {
+  background: #fff;
+  box-shadow: 0 2px 12px rgb(3 42 57 / 0.1);
+}
+.wb-row strong {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.wb-row small {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--wb-slate);
+  font-size: 0.875rem;
+}
+.wb-board__empty {
+  margin: 0;
+  padding: 2.5rem 1rem;
+  color: var(--wb-slate);
+  text-align: center;
+}
+.wb-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.8rem;
+  border-radius: 9999px;
+  background: rgb(14 18 20 / 0.06);
+  color: var(--wb-ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.wb-badge--critical {
+  background: var(--danger);
+  color: #fff;
+}
+.wb-badge--medium {
+  background: rgb(242 169 59 / 0.2);
+  color: #7a4a00;
+}
+.wb-badge--status-new {
+  background: rgb(63 186 194 / 0.2);
+  color: #045a68;
+}
+.wb-badge--status-resolved {
+  background: rgb(31 138 76 / 0.14);
+  color: #176b3b;
+}
+@media (max-width: 1100px) {
+  .wb-board__grid {
+    grid-template-columns: 1fr;
+  }
+  .wb-aside {
+    position: static;
+  }
+}
+@media (max-width: 640px) {
+  .wb-dash__title {
+    font-size: 2rem;
+  }
+  .wb-board__head {
+    display: none;
+  }
+  .wb-row {
+    grid-template-columns: 1fr auto;
+  }
+  .wb-row > span:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+    color: var(--wb-slate);
+    font-size: 0.9375rem;
+  }
+  .wb-row > span:nth-child(3) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+/* ==========================================================================
+   Szkło w całym panelu: jedna rodzina powierzchni (rozmycie + biała poświata krawędzi),
+   także dla pływających elementów (menu, okna, szuflady) i stałych (nagłówek, panel boczny).
+   ========================================================================== */
+html[data-theme="light"] .wb-card,
+html[data-theme="light"] .card,
+html[data-theme="light"] .wb-admin-panel,
+html[data-theme="light"] .wb-nav-watch,
+html[data-theme="light"] .document-fields__edit,
+html[data-theme="light"] .document-fields__sidebar,
+html[data-theme="light"] .wb-aside,
+html[data-theme="light"] .table {
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+}
+
+html[data-theme="light"] .app-header,
+html[data-theme="light"] .doc-controls,
+html[data-theme="light"] .nav {
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+}
+
+html[data-theme="light"] .popup__content,
+html[data-theme="light"] .rs__menu,
+html[data-theme="light"] .react-datepicker,
+html[data-theme="light"] .modal__content,
+html[data-theme="light"] .drawer__content,
+html[data-theme="light"] .tooltip,
+html[data-theme="light"] .payload-toast-container .toast-title {
+  border: 1px solid var(--wb-glass-border);
+  border-radius: 18px;
+  background: var(--wb-glass-strong);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 18px 44px rgb(3 42 57 / 0.18);
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  backdrop-filter: blur(26px) saturate(170%);
+}
+
+html[data-theme="light"] .drawer__content {
+  border-radius: 24px 0 0 24px;
+}
+
+html[data-theme="light"] .modal-container,
+html[data-theme="light"] .drawer__blur-bg {
+  background: rgb(3 42 57 / 0.22);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* Pola i filtry: szkło zamiast białych płaszczyzn */
+html[data-theme="light"] .field-type input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="light"] .field-type textarea,
+html[data-theme="light"] .rs__control,
+html[data-theme="light"] .search-filter__input,
+html[data-theme="light"] .date-time-picker__input-wrapper {
+  border-color: var(--wb-glass-border);
+  background: rgb(255 255 255 / 0.5);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html[data-theme="light"] .wb-card,
+  html[data-theme="light"] .wb-aside,
+  html[data-theme="light"] .app-header,
+  html[data-theme="light"] .document-fields__edit,
+  html[data-theme="light"] .document-fields__sidebar,
+  html[data-theme="light"] .popup__content,
+  html[data-theme="light"] .rs__menu,
+  html[data-theme="light"] .modal__content,
+  html[data-theme="light"] .drawer__content {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #fff;
+  }
+}
+
+/* --- Panel boczny pulpitu (VerifyAside, komponenty HeroUI) --- */
+.wb-aside {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--wb-glass-border);
+  border-radius: 24px;
+  background: var(--wb-glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), var(--wb-shadow);
+}
+
+.wb-aside__tabs .tabs__list-container,
+.wb-aside__tabs .tabs__list {
+  width: 100%;
+}
+
+.wb-aside__tabs .tabs__tab {
+  flex: 1;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.wb-aside__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 0.5rem 0.5rem;
+}
+
+.wb-aside__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.wb-aside__head h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--wb-ink);
+}
+
+.wb-aside__head p {
+  margin: 0.25rem 0 0;
+  color: var(--wb-slate);
+  font-size: 1rem;
+}
+
+.wb-aside__note {
+  margin: 0;
+  padding: 0.75rem 0 0.75rem 0.875rem;
+  border-left: 2px solid var(--wb-accent);
+  color: var(--wb-ink);
+  font-size: 0.9375rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.wb-aside__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.625rem 1rem;
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.wb-aside__facts dt {
+  color: var(--wb-slate);
+}
+
+.wb-aside__facts dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-aside__facts dd span {
+  color: var(--wb-slate);
+  font-weight: 400;
+}
+
+.wb-aside__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wb-aside__actions .button {
+  height: 2.75rem;
+  border-radius: 9999px;
+}
+
+.wb-aside__link {
+  align-self: center;
+  margin-top: 0.25rem;
+  color: var(--wb-slate);
+  font-size: 0.8125rem;
 }

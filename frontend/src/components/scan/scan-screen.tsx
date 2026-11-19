@@ -13,6 +13,38 @@ import { decodeQrFromFile } from "@/lib/qr-image";
 import { deviceIdFromCode } from "@/lib/schemas";
 
 const SCAN_EVERY_MS = 120;
+const SCAN_WIDTH = 720;
+
+type BarcodeDetectorLike = { detect(source: CanvasImageSource): Promise<{ rawValue: string }[]> };
+
+// Natywny detektor (Chrome na Androidzie, Safari 17+) jest dokładniejszy niż jsQR; gdy go brak, zostaje jsQR.
+function createDetector(): BarcodeDetectorLike | null {
+  const Ctor = (globalThis as { BarcodeDetector?: new (o: { formats: string[] }) => BarcodeDetectorLike }).BarcodeDetector;
+  try {
+    return Ctor ? new Ctor({ formats: ["qr_code"] }) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Tylna kamera w dobrej rozdzielczości; gdy urządzenie odrzuci wymagania, próbujemy dowolnej kamery.
+async function openCamera(): Promise<MediaStream> {
+  const attempts: MediaStreamConstraints[] = [
+    { video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+    { video: { facingMode: "environment" }, audio: false },
+    { video: true, audio: false },
+  ];
+  let last: unknown;
+  for (const constraints of attempts) {
+    try {
+      return await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      last = e;
+      if (e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError")) break;
+    }
+  }
+  throw last;
+}
 
 // Prawdziwy skaner: obraz z kamery jest dekodowany (jsQR), a rozpoznany kod urządzenia otwiera formularz zgłoszenia.
 export function ScanScreen() {
@@ -80,18 +112,34 @@ export function ScanScreen() {
     let lastScan = 0;
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const detector = createDetector();
+    let busy = false;
 
     function tick(time: number) {
       raf = requestAnimationFrame(tick);
       const video = videoRef.current;
       if (!ctx || !video || video.readyState < 2 || !video.videoWidth || time - lastScan < SCAN_EVERY_MS) return;
       lastScan = time;
-      const w = 480;
+      if (detector) {
+        if (busy) return;
+        busy = true;
+        detector
+          .detect(video)
+          .then((found) => {
+            if (found[0]?.rawValue) handleCodeRef.current(found[0].rawValue);
+          })
+          .catch(() => {})
+          .finally(() => {
+            busy = false;
+          });
+        return;
+      }
+      const w = Math.min(SCAN_WIDTH, video.videoWidth);
       const h = Math.round((video.videoHeight / video.videoWidth) * w);
       canvas.width = w;
       canvas.height = h;
       ctx.drawImage(video, 0, 0, w, h);
-      const code = jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "dontInvert" });
+      const code = jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "attemptBoth" });
       if (code?.data) handleCodeRef.current(code.data);
     }
 
@@ -101,10 +149,7 @@ export function ScanScreen() {
         return;
       }
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },
-          audio: false,
-        });
+        const stream = await openCamera();
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -118,8 +163,16 @@ export function ScanScreen() {
         const caps = stream.getVideoTracks()[0]?.getCapabilities?.() as (MediaTrackCapabilities & { torch?: boolean }) | undefined;
         setTorchOk(Boolean(caps?.torch));
         raf = requestAnimationFrame(tick);
-      } catch {
-        if (!cancelled) setCamError("Brak dostępu do aparatu. Zrób zdjęcie kodu albo wpisz go ręcznie.");
+      } catch (e) {
+        if (cancelled) return;
+        const name = e instanceof DOMException ? e.name : "";
+        setCamError(
+          name === "NotAllowedError" || name === "SecurityError"
+            ? "Brak dostępu do aparatu. Zezwól na niego w ustawieniach przeglądarki, zrób zdjęcie kodu albo wpisz go ręcznie."
+            : name === "NotFoundError"
+              ? "Nie znaleziono aparatu w tym urządzeniu. Zrób zdjęcie kodu albo wpisz go ręcznie."
+              : "Nie udało się uruchomić aparatu (może używa go inna aplikacja). Zrób zdjęcie kodu albo wpisz go ręcznie.",
+        );
       }
     }
     void start();

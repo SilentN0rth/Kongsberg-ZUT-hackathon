@@ -1,7 +1,6 @@
 "use client";
 
 import { animate, motionValue } from "motion";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { useMedia } from "@/lib/use-media";
@@ -15,13 +14,13 @@ const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
  *   title (nagłówek hero)       unosi się i znika do p ≈ 0.74
  *   ocean (tło)                 powiększa się cały czas (nośnik ruchu)
  *   veil  (zasłona)             wchodzi od p = 0.25, pełna przy p ≈ 0.96; kolor jak tło ekranu logowania panelu,
- *                               a samo przejście dokumentów robi przeglądarka (View Transitions, patrz globals.css)
+ *                               a samo przejście dokumentów robi przeglądarka (View Transitions, patrz globals.css);
+ *                               pierwsza klatka panelu jest w tym samym kolorze (admin-theme.css), więc nie ma błysku
  * Ruch jest odwracalny: sprężyna startuje z bieżącej wartości. Po 380 ms bez przewijania postęp skacze do 1 (jeśli
  * minął próg 0.45) albo wraca do 0. Tylko desktop i tylko bez „reduced motion” (reszta ma zwykły przycisk).
  * Tylko transform i opacity, ustawiane bezpośrednio na elementach.
  */
 export function ScrollToBridge({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const goRef = useRef<(() => void) | null>(null);
   const desktop = useMedia("(min-width: 1024px)");
@@ -37,6 +36,9 @@ export function ScrollToBridge({ children }: { children: ReactNode }) {
     const title = all("title");
     const ocean = all("ocean");
     const veil = all("veil");
+
+    // Rozgrzewka: pierwsze wejście na /admin (w dev kompilacja) nie powinno trafić w sam moment przejścia.
+    const warm = window.setTimeout(() => void fetch("/admin/login", { cache: "no-store", credentials: "omit" }).catch(() => {}), 1500);
 
     const apply = (v: number) => {
       const rest = v < 0.001;
@@ -70,7 +72,10 @@ export function ScrollToBridge({ children }: { children: ReactNode }) {
         onComplete: () => {
           if (target === 1 && !leaving) {
             leaving = true;
-            router.push("/admin");
+            // /admin ma osobny root layout, więc to i tak nawigacja dokumentu: robimy ją wprost, bez dodatkowego zapytania routera.
+            // Pierwsza klatka panelu jest od razu w kolorze zasłony (admin-theme.css), więc przejście jest ciągłe.
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+            window.location.assign("/admin");
           }
         },
       });
@@ -111,6 +116,7 @@ export function ScrollToBridge({ children }: { children: ReactNode }) {
       run?.stop();
       p.set(0);
       target = 0;
+
     };
 
     goRef.current = () => drive(1);
@@ -122,6 +128,7 @@ export function ScrollToBridge({ children }: { children: ReactNode }) {
 
     return () => {
       clearTimeout(idle);
+      clearTimeout(warm);
       run?.stop();
       stop();
       goRef.current = null;
@@ -132,7 +139,7 @@ export function ScrollToBridge({ children }: { children: ReactNode }) {
       window.removeEventListener("pageshow", onShow);
       apply(0);
     };
-  }, [active, router]);
+  }, [active]);
 
   return (
     <div ref={rootRef} className="relative flex min-h-0 flex-1 flex-col">

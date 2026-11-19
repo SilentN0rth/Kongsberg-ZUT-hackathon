@@ -8,8 +8,8 @@ import { LiveRefresh as LiveRefresh_d3dd7535f78de202b674199bd52c28cc } from '../
 import { Icon as Icon_ecb2d425e0c47f2704e0f6c0188b49d0 } from '../../../admin/Icon'
 import { Logo as Logo_8c3bf6d9c8d24e4e81ab6192a4938147 } from '../../../admin/Logo'
 import { NavWatch as NavWatch_2ef4b05a839a6ab1f0e96b0c9a370e36 } from '../../../admin/NavWatch'
-import { BeforeDashboard as BeforeDashboard_e9bbfc64b681f35811f8025e010d8823 } from '../../../admin/BeforeDashboard'
-import { NavBrand as NavBrand_6b669b45df30db16e1bd122a34acce44 } from '../../../admin/NavBrand'
+import { LoginHero as LoginHero_d65be30018b6ed276e1b2dfdd3d1102d } from '../../../admin/LoginHero'
+import { Dashboard as Dashboard_b1da18705623495fe0da513a008df5f5 } from '../../../admin/Dashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -24,7 +24,7 @@ export const importMap = {
   "/admin/Icon#Icon": Icon_ecb2d425e0c47f2704e0f6c0188b49d0,
   "/admin/Logo#Logo": Logo_8c3bf6d9c8d24e4e81ab6192a4938147,
   "/admin/NavWatch#NavWatch": NavWatch_2ef4b05a839a6ab1f0e96b0c9a370e36,
-  "/admin/BeforeDashboard#BeforeDashboard": BeforeDashboard_e9bbfc64b681f35811f8025e010d8823,
-  "/admin/NavBrand#NavBrand": NavBrand_6b669b45df30db16e1bd122a34acce44,
+  "/admin/LoginHero#LoginHero": LoginHero_d65be30018b6ed276e1b2dfdd3d1102d,
+  "/admin/Dashboard#Dashboard": Dashboard_b1da18705623495fe0da513a008df5f5,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
