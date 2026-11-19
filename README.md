@@ -15,5 +15,7 @@ pnpm dev:web    # frontend na :3000, /api/* przekierowane na backend
 pnpm test:api   # testy backendu
 ```
 
+Na statku (sieć lokalna, bez internetu): `./scripts/start-backend.sh` albo `scripts\start-backend.bat`; szczegóły w sekcji „Wdrożenie” w `PLAN.md`.
+
 Frontend: `cd frontend && pnpm install`. Konfiguracja: `frontend/.env.example`, `backend/.env.example`.
 Plan i kontrakt API: `PLAN.md`.

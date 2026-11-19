@@ -34,8 +34,8 @@ Projekty nie współdzielą plików konfiguracyjnych ani zależności. Łączy j
 
 ## Otwarte decyzje (do zamknięcia w Etapie 0)
 
-1. **Baza Postgres:** lokalnie działa H2 bez konfiguracji; do wdrożenia Neon / Supabase / Vercel Postgres (hosted, rekomendowane na hackathon) albo lokalny Postgres z Homebrew. Potrzebny `DATABASE_URL`.
-2. **Hosting:** front na Vercel (HTTPS wymagane przez service worker), backend z `backend/Dockerfile` na Render/Railway/Fly; `BACKEND_URL` na Vercel wskazuje backend.
+1. **Baza:** lokalna H2 w pliku (bez instalacji, bez internetu); Postgres tylko opcjonalnie, do wdrożenia Neon / Supabase / Vercel Postgres (hosted, rekomendowane na hackathon) albo lokalny Postgres z Homebrew. Potrzebny `DATABASE_URL`.
+2. **Hosting:** brak chmury – wszystko na komputerze na mostku w sieci lokalnej (sekcja „Wdrożenie” niżej).
 3. **Zdjęcia:** na razie `bytea` w Postgresie (zdjęcia kompresowane po stronie klienta); S3/Blob tylko jeśli zabraknie miejsca.
 4. **Serwist z Next 16/Turbopack:** sprawdzić, czy wystarczy `serwist` + własny `sw.ts`, czy dołożyć `@serwist/turbopack`.
 5. **Podział ról:** kto kod, kto treści i pitch.
@@ -109,13 +109,28 @@ Głos, czat z manualami (RAG), logowanie i profile, prawdziwe czujniki i integra
 
 Uruchomienie: `pnpm dev:api` (port 8080) i `pnpm dev:web` (port 3000) z korzenia repo.
 
-## Wdrożenie backendu (bez laptopa): Render free + Neon free
+## Wdrożenie: sieć lokalna statku, bez internetu
 
-1. **Neon** (neon.tech): załóż projekt Postgres, skopiuj *connection string* (`postgres://user:haslo@host/db?sslmode=require`). Backend sam zamienia go na JDBC, nic nie przerabiasz.
-2. **Render**: *New → Blueprint*, wskaż to repo i gałąź. `render.yaml` utworzy usługę `watchbrief-api` z `backend/Dockerfile`. W panelu ustaw:
-   - `DATABASE_URL` = connection string z Neona,
-   - `CORS_ORIGINS` = adres frontu (opcjonalnie; przy rewrite Next niepotrzebne).
-3. Sprawdź `https://<usluga>.onrender.com/api/health` (powinno zwrócić `ok`) oraz `/api/devices`. Przy pierwszym starcie baza zasieje się danymi demo.
-4. **Vercel** (Root Directory = `frontend`): zmienna `BACKEND_URL` = `https://<usluga>.onrender.com`.
-5. **Usypianie:** darmowy Render usypia usługę po ok. 15 min bez ruchu, a zimny start Springa trwa ok. pół minuty. Skonfiguruj darmowy monitor (np. UptimeRobot) pingujący `/api/health` co 5 min, a przed demem i tak wejdź na ten adres ręcznie.
-6. Darmowa instancja ma 512 MB RAM; JVM jest ograniczona flagami w `Dockerfile`. Zdjęcia kompresuj po stronie klienta (kilkaset KB).
+Założenie: na statku nie ma internetu, jest tylko sieć lokalna (Wi-Fi/LAN). Backend z bazą H2 w pliku działa na komputerze na mostku; skanery łączą się z nim po adresie IP.
+
+```
+skaner (Android, przeglądarka) ──Wi-Fi/LAN──► komputer na mostku: backend :8080 (+ frontend :3000)
+```
+
+**Komputer na mostku – wymagania:** Java 21 (JRE). Maven i Node tylko do budowania; gotowy `watchbrief-backend-0.1.0.jar` wystarczy skopiować i uruchomić.
+
+**Start backendu**
+- Linux/macOS: `./scripts/start-backend.sh`, Windows: `scripts\start-backend.bat` (przy pierwszym uruchomieniu zbudują jar).
+- Albo ręcznie: `java -jar watchbrief-backend-0.1.0.jar`.
+- Po starcie w logu pojawią się adresy typu `http://192.168.x.x:8080/api/health` – pod nie podłączają się skanery. Sprawdź to z innego urządzenia w tej samej sieci.
+- Zapora systemowa musi przepuszczać port 8080 (i 3000 dla frontendu).
+
+**Dane:** plik `backend/data/watchbrief.mv.db` (zmiana katalogu: zmienna `DATA_DIR`). Kopia zapasowa = skopiowanie tego pliku przy zatrzymanym backendzie. Reset danych demo: `POST /api/demo/reset`.
+
+**Frontend w sieci lokalnej:** `pnpm build && pnpm start` w `frontend/` na tym samym komputerze (`BACKEND_URL` zostaje `http://localhost:8080`); skanery otwierają `http://<ip-komputera>:3000`.
+
+**Znane ryzyko – bezpieczny kontekst:** service worker (praca offline aplikacji) działa w Chrome tylko przez HTTPS lub `localhost`. Adres `http://192.168.x.x` tego nie spełnia, więc offline PWA na skanerze może nie działać. Do sprawdzenia na prawdziwym urządzeniu; możliwe wyjścia: certyfikat HTTPS zainstalowany na skanerach albo ustawienie Chrome pozwalające traktować dany adres jako bezpieczny. Dopóki skaner jest w zasięgu sieci, zapis do backendu działa bez service workera.
+
+**Bezpieczeństwo:** API nie ma uwierzytelniania i domyślnie przyjmuje żądania z dowolnego adresu (CORS `*`). Dopuszczalne w izolowanej sieci demo; przed realnym wdrożeniem dodać klucz API/logowanie i HTTPS.
+
+**Opcjonalnie (poza hackathonem):** `DATABASE_URL` pozwala przełączyć backend na Postgres (np. zewnętrzny); adres w formie `postgres://...` jest tłumaczony na JDBC automatycznie.
