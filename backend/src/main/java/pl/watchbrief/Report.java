@@ -6,8 +6,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 import java.time.Instant;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 /** Zgloszenie usterki. id generuje klient (UUID) - dzieki temu ponowna wysylka z kolejki offline jest idempotentna. */
 @Entity
@@ -24,14 +22,11 @@ public class Report {
     private Instant receivedAt;
     @Enumerated(EnumType.STRING)
     private ReportStatus status = ReportStatus.NEW;
-    @JdbcTypeCode(SqlTypes.LONGVARBINARY)
-    private byte[] photo;
-    private String photoType;
 
     protected Report() {}
 
     public Report(String id, String deviceId, String symptom, Priority priority, String note,
-                  Instant createdAt, byte[] photo, String photoType) {
+                  Instant createdAt) {
         this.id = id;
         this.deviceId = deviceId;
         this.symptom = symptom;
@@ -39,8 +34,6 @@ public class Report {
         this.note = note;
         this.createdAt = createdAt;
         this.receivedAt = Instant.now();
-        this.photo = photo;
-        this.photoType = photoType;
     }
 
     public String getId() { return id; }
@@ -52,6 +45,4 @@ public class Report {
     public Instant getReceivedAt() { return receivedAt; }
     public ReportStatus getStatus() { return status; }
     public void setStatus(ReportStatus status) { this.status = status; }
-    public byte[] getPhoto() { return photo; }
-    public String getPhotoType() { return photoType; }
 }

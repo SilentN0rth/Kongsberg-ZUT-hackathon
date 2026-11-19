@@ -3,9 +3,7 @@ package pl.watchbrief;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
-import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -62,16 +60,6 @@ public class ApiController {
         return ReportService.toOut(r, reportService.deviceMap());
     }
 
-    @GetMapping("/reports/{id}/photo")
-    public ResponseEntity<byte[]> photo(@PathVariable String id) {
-        Report r = reports.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (r.getPhoto() == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(r.getPhotoType()))
-                .cacheControl(CacheControl.maxAge(java.time.Duration.ofDays(1)).cachePublic())
-                .body(r.getPhoto());
-    }
-
     /** Buduje i zapisuje nowy brief z otwartych usterek. */
     @PostMapping("/handover/brief")
     public BriefOut brief() { return briefService.generate(); }
@@ -86,9 +74,34 @@ public class ApiController {
     @PostMapping("/handover/{id}/take")
     public BriefOut take(@PathVariable Long id) { return briefService.takeOver(id); }
 
+    // --- Narzedzia demo / testowe -------------------------------------------------
+
+    /** Reset do scenariusza "basic". */
     @PostMapping("/demo/reset")
     public String reset() {
         seeder.reset();
         return "reset";
+    }
+
+    @GetMapping("/demo/scenarios")
+    public List<String> scenarios() { return DemoSeeder.SCENARIOS; }
+
+    /** Czysci dane i laduje scenariusz: basic | quiet | busy | critical. */
+    @PostMapping("/demo/scenarios/{name}")
+    public String scenario(@PathVariable String name) {
+        try {
+            seeder.load(name);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return "loaded " + name;
+    }
+
+    /** Symuluje zgloszenia ze skanerow (losowe urzadzenie/objaw), 1-20 naraz. */
+    @PostMapping("/demo/simulate")
+    public List<ReportOut> simulate(@RequestParam(defaultValue = "1") int count) {
+        if (count < 1 || count > 20) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "count musi byc 1-20");
+        java.util.Map<String, Device> dm = reportService.deviceMap();
+        return seeder.simulate(count).stream().map(r -> ReportService.toOut(r, dm)).toList();
     }
 }

@@ -8,20 +8,18 @@ import java.time.Instant;
 public final class Dto {
     private Dto() {}
 
-    /** photoBase64: czyste base64 lub data URL ("data:image/jpeg;base64,..."). */
     public record ReportIn(
             @NotBlank String id,
             @NotBlank String deviceId,
             @NotBlank String symptom,
             @NotNull Priority priority,
             String note,
-            Instant createdAt,
-            String photoBase64) {}
+            Instant createdAt) {}
 
     public record ReportOut(
             String id, String deviceId, String deviceName, String sector, String symptom,
             Priority priority, String note, Instant createdAt, Instant receivedAt,
-            ReportStatus status, boolean hasPhoto) {}
+            ReportStatus status) {}
 
     public record StatusIn(@NotNull ReportStatus status) {}
 
