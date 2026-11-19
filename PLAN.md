@@ -105,7 +105,10 @@ Głos, czat z manualami (RAG), logowanie i profile, prawdziwe czujniki i integra
 | POST | `/api/handover/brief` | Generuje i zapisuje Handover Brief |
 | GET | `/api/handover/latest` | Ostatni brief (204 gdy brak) |
 | POST | `/api/handover/{id}/take` | „Przejmuję wachtę” |
-| POST | `/api/demo/reset` | Reset danych demo |
+| POST | `/api/demo/reset` | Reset do scenariusza `basic` |
+| GET | `/api/demo/scenarios` | Lista scenariuszy demo |
+| POST | `/api/demo/scenarios/{name}` | Wyczyść dane i załaduj scenariusz: `basic`, `quiet`, `busy`, `critical` |
+| POST | `/api/demo/simulate?count=1..20` | Dodaj losowe zgłoszenia „ze skanerów” (do pokazu skrzynki serwisu na żywo) |
 
 Uruchomienie: `pnpm dev:api` (port 8080) i `pnpm dev:web` (port 3000) z korzenia repo.
 
@@ -134,3 +137,18 @@ skaner (Android, przeglądarka) ──Wi-Fi/LAN──► komputer na mostku: bac
 **Bezpieczeństwo:** API nie ma uwierzytelniania i domyślnie przyjmuje żądania z dowolnego adresu (CORS `*`). Dopuszczalne w izolowanej sieci demo; przed realnym wdrożeniem dodać klucz API/logowanie i HTTPS.
 
 **Opcjonalnie (poza hackathonem):** `DATABASE_URL` pozwala przełączyć backend na Postgres (np. zewnętrzny); adres w formie `postgres://...` jest tłumaczony na JDBC automatycznie.
+
+## Dane demo i testy
+
+**Scenariusze (`DemoSeeder`):** `basic` (5 wpisów, 1 krytyczny – wzorcowy brief), `quiet` (brak usterek), `busy` (18 wpisów z 8 h, część potwierdzona/rozwiązana, 2 ze zdjęciem-zaślepką PNG, dane stałe po każdym ładowaniu), `critical` (6 krytycznych w różnych sektorach + 3 średnie).
+
+**Skrypt `scripts/demo.sh`** (adres: `BASE_URL`, domyślnie `http://localhost:8080`):
+```
+scripts/demo.sh load busy       # załaduj scenariusz
+scripts/demo.sh live 5          # co 5 s nowe zgłoszenie "ze skanera" (Ctrl+C kończy)
+scripts/demo.sh offline         # test kolejki offline: te same wpisy 2x, bez duplikatów
+scripts/demo.sh brief           # wygeneruj i wypisz brief
+scripts/demo.sh reset
+```
+
+**Testy backendu (`pnpm test:api`):** `DemoScenariosTest` sprawdza każdy scenariusz, symulator i brief; `MockScanner` (w `src/test`) to mock skanera z kolejką offline – wysyła zgłoszenia częściowo, ponawia je i weryfikuje idempotentność po `id`.

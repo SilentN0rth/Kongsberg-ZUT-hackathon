@@ -86,9 +86,34 @@ public class ApiController {
     @PostMapping("/handover/{id}/take")
     public BriefOut take(@PathVariable Long id) { return briefService.takeOver(id); }
 
+    // --- Narzedzia demo / testowe -------------------------------------------------
+
+    /** Reset do scenariusza "basic". */
     @PostMapping("/demo/reset")
     public String reset() {
         seeder.reset();
         return "reset";
+    }
+
+    @GetMapping("/demo/scenarios")
+    public List<String> scenarios() { return DemoSeeder.SCENARIOS; }
+
+    /** Czysci dane i laduje scenariusz: basic | quiet | busy | critical. */
+    @PostMapping("/demo/scenarios/{name}")
+    public String scenario(@PathVariable String name) {
+        try {
+            seeder.load(name);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return "loaded " + name;
+    }
+
+    /** Symuluje zgloszenia ze skanerow (losowe urzadzenie/objaw), 1-20 naraz. */
+    @PostMapping("/demo/simulate")
+    public List<ReportOut> simulate(@RequestParam(defaultValue = "1") int count) {
+        if (count < 1 || count > 20) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "count musi byc 1-20");
+        java.util.Map<String, Device> dm = reportService.deviceMap();
+        return seeder.simulate(count).stream().map(r -> ReportService.toOut(r, dm)).toList();
     }
 }
